@@ -1,0 +1,152 @@
+/* index.css — Global Styles */
+/* Import Google Font for professional typography */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+/* Tailwind base directives */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Base Styles ──────────────────────────────────────────────────────────── */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background-color: #0a0a1a;
+  color: #e2e8f0;
+  font-family: 'Inter', sans-serif;
+  min-height: 100vh;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #0f0f2a;
+}
+::-webkit-scrollbar-thumb {
+  background: #7c3aed;
+  border-radius: 3px;
+}
+
+/* ── Custom Component Classes ─────────────────────────────────────────────── */
+@layer components {
+
+  /* Dark glassmorphism card */
+  .quantum-card {
+    @apply bg-[#0f0f2a] border border-[#1e1e4a] rounded-2xl p-6;
+    box-shadow: 0 0 30px rgba(124, 58, 237, 0.08);
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
+  }
+
+  .quantum-card:hover {
+    box-shadow: 0 0 40px rgba(124, 58, 237, 0.2), 0 0 60px rgba(6, 182, 212, 0.08);
+    transform: translateY(-2px);
+  }
+
+  /* Glowing purple/cyan gradient button */
+  .btn-primary {
+    @apply px-6 py-3 rounded-xl font-semibold text-white cursor-pointer;
+    background: linear-gradient(135deg, #7c3aed, #06b6d4);
+    transition: all 0.3s ease;
+    border: none;
+  }
+
+  .btn-primary:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+    box-shadow: 0 0 20px rgba(124, 58, 237, 0.5);
+  }
+
+  .btn-primary:disabled {
+    @apply opacity-50 cursor-not-allowed;
+    transform: none;
+  }
+
+  /* Search input */
+  .search-input {
+    @apply bg-[#0f0f2a] border border-[#1e1e4a] text-white rounded-xl px-5 py-3 outline-none;
+    @apply placeholder-slate-500 text-lg;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .search-input:focus {
+    border-color: #7c3aed;
+    box-shadow: 0 0 15px rgba(124, 58, 237, 0.3);
+  }
+
+  /* Gradient text effect */
+  .gradient-text {
+    background: linear-gradient(135deg, #a78bfa, #06b6d4);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Confidence bar */
+  .confidence-bar {
+    @apply w-full h-2 bg-[#1e1e4a] rounded-full overflow-hidden;
+  }
+
+  .confidence-fill {
+    @apply h-full rounded-full;
+    background: linear-gradient(90deg, #7c3aed, #06b6d4);
+    transition: width 0.8s ease;
+  }
+
+  /* Status badges */
+  .badge {
+    @apply px-3 py-1 rounded-full text-xs font-semibold;
+  }
+
+  .badge-bullish  { @apply bg-emerald-500/20 text-emerald-400 border border-emerald-500/30; }
+  .badge-bearish  { @apply bg-red-500/20 text-red-400 border border-red-500/30; }
+  .badge-neutral  { @apply bg-amber-500/20 text-amber-400 border border-amber-500/30; }
+  .badge-buy      { @apply bg-emerald-500/20 text-emerald-400 border border-emerald-500/40; }
+  .badge-sell     { @apply bg-red-500/20 text-red-400 border border-red-500/40; }
+  .badge-hold     { @apply bg-amber-500/20 text-amber-400 border border-amber-500/40; }
+}
+
+/* ── Animations ────────────────────────────────────────────────────────────── */
+
+/* Fade in from bottom */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in-up {
+  animation: fadeInUp 0.5s ease forwards;
+}
+
+/* Spinning loader */
+@keyframes spin-slow {
+  to { transform: rotate(360deg); }
+}
+
+.spin-slow {
+  animation: spin-slow 1.5s linear infinite;
+}
+
+/* Pulse glow for recommendation card */
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 20px rgba(124, 58, 237, 0.3); }
+  50%       { box-shadow: 0 0 50px rgba(124, 58, 237, 0.6), 0 0 80px rgba(6, 182, 212, 0.2); }
+}
+
+.pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* Node animation for architecture diagram */
+@keyframes nodeFloat {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-5px); }
+}
+
+.node-float {
+  animation: nodeFloat 3s ease-in-out infinite;
+}
