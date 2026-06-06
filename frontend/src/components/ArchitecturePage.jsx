@@ -35,8 +35,8 @@ const NODES = [
     label: "Technical Agent",
     sublabel: "S/R Levels · Volatility · RSI",
     icon: "📈",
-    color: "from-purple-900 to-purple-950",
-    border: "border-purple-500/40",
+    color: "from-blue-900 to-blue-950",
+    border: "border-blue-500/40",
   },
   {
     id: "fundamental",
@@ -59,8 +59,8 @@ const NODES = [
     label: "Master Orchestrator",
     sublabel: "Weighted Consensus synthesis",
     icon: "🧠",
-    color: "from-violet-900 to-violet-950",
-    border: "border-violet-500/40",
+    color: "from-sky-900 to-sky-950",
+    border: "border-sky-500/40",
   },
   {
     id: "output",
@@ -76,9 +76,9 @@ const NODES = [
 function Arrow({ label = "" }) {
   return (
     <div className="flex justify-center my-1">
-      <div className="flex flex-col items-center text-purple-500/60">
+      <div className="flex flex-col items-center text-blue-500/60">
         {label && <span className="text-[9px] text-slate-500 font-mono tracking-tight mb-1">{label}</span>}
-        <div className="w-px h-5 bg-gradient-to-b from-purple-500/60 to-purple-500/20" />
+        <div className="w-px h-5 bg-gradient-to-b from-blue-500/60 to-blue-500/20" />
         <span className="text-[10px]">▼</span>
       </div>
     </div>
@@ -93,7 +93,7 @@ function Node({ node, delay = 0 }) {
                   px-5 py-3 flex items-center gap-3 node-float shadow-lg`}
       style={{
         animationDelay: `${delay}s`,
-        boxShadow: "0 0 20px rgba(124, 58, 237, 0.1)",
+        boxShadow: "0 4px 12px rgba(59, 130, 246, 0.08)",
       }}
     >
       <span className="text-2xl">{node.icon}</span>
@@ -135,7 +135,7 @@ function ArchitecturePage() {
             <Node node={NODES[1]} delay={0.08} />
             
             {/* Split showing cache logic */}
-            <div className="flex justify-between items-center px-4 py-1 text-[9px] font-mono text-purple-400">
+            <div className="flex justify-between items-center px-4 py-1 text-[9px] font-mono text-blue-400">
               <span>[Cache Hit] ➔ Bypass to UI</span>
               <span>[Cache Miss] ➔ Ingest</span>
             </div>
@@ -215,7 +215,7 @@ function ArchitecturePage() {
                 tech: ["40-35-25 Weighted average math", "Consensus risk calculation", "Downside risks & catalysts summary"],
               },
             ].map((agent) => (
-              <div key={agent.name} className="border-b border-[#1e1e4a]/60 last:border-0 pb-4 last:pb-0 mb-4 last:mb-0">
+              <div key={agent.name} className="border-b border-white/5 last:border-0 pb-4 last:pb-0 mb-4 last:mb-0">
                 <div className="flex items-start gap-3">
                   <span className="text-2xl mt-0.5">{agent.icon}</span>
                   <div className="flex-1">
@@ -223,8 +223,8 @@ function ArchitecturePage() {
                     <p className="text-slate-400 text-xs leading-relaxed mb-2 font-light">{agent.desc}</p>
                     <div className="flex flex-wrap gap-1">
                       {agent.tech.map((t) => (
-                        <span key={t} className="px-2 py-0.5 bg-purple-600/10 border border-purple-500/20
-                                                   text-purple-400 text-[10px] rounded-md font-mono">
+                        <span key={t} className="px-2 py-0.5 bg-blue-500/10 border border-blue-500/20
+                                                   text-blue-400 text-[10px] rounded-md font-mono">
                           {t}
                         </span>
                       ))}
@@ -243,13 +243,13 @@ function ArchitecturePage() {
             <div className="grid grid-cols-2 gap-3">
               {[
                 { label: "Frontend Engine", value: "React.js + Vite", color: "text-cyan-400" },
-                { label: "Styling System", value: "Tailwind CSS Layouts", color: "text-purple-400" },
+                { label: "Styling System", value: "Tailwind CSS Layouts", color: "text-blue-400" },
                 { label: "Backend API Framework", value: "FastAPI (Python)", color: "text-emerald-400" },
                 { label: "Server runtime", value: "Uvicorn (Reload Mode)", color: "text-amber-400" },
-                { label: "HTTP Connection Engine", value: "Httpx / Axios Client", color: "text-blue-400" },
-                { label: "AI Gateway Engine", value: "Groq Cloud Completion", color: "text-violet-400" },
+                { label: "HTTP Connection Engine", value: "Httpx / Axios Client", color: "text-sky-400" },
+                { label: "AI Gateway Engine", value: "Groq Cloud Completion", color: "text-teal-400" },
               ].map((item) => (
-                <div key={item.label} className="bg-[#0a0a1a] rounded-lg p-3 border border-[#1e1e4a]">
+                <div key={item.label} className="bg-[#0b1020] rounded-lg p-3 border border-white/5">
                   <p className="text-slate-500 text-[10px] uppercase font-bold tracking-wider font-mono">{item.label}</p>
                   <p className={`font-semibold text-sm ${item.color} mt-0.5`}>{item.value}</p>
                 </div>

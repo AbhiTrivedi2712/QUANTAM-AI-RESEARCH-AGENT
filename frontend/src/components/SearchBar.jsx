@@ -71,8 +71,8 @@ function SearchBar({ onSearch, isLoading }) {
             onClick={() => handleQuickSelect(sym)}
             disabled={isLoading}
             className="px-3 py-1 text-xs font-mono font-semibold rounded-lg
-                       bg-[#1e1e4a] text-slate-300 border border-[#2e2e5a]
-                       hover:border-purple-500/50 hover:text-purple-400
+                       bg-[#0b1020] text-slate-300 border border-white/5
+                       hover:border-blue-500/50 hover:text-blue-400
                        transition-all duration-200 disabled:opacity-50"
           >
             {sym}

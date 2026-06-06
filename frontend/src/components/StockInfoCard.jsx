@@ -11,6 +11,8 @@ function StockInfoCard({ symbol, stockInfo }) {
   if (!stock) return null;
 
   const isPositive = stock.change >= 0;
+  const isIndian = stock.symbol && (stock.symbol.endsWith(".NS") || stock.symbol.endsWith(".BO") || stock.symbol.endsWith(".ns") || stock.symbol.endsWith(".bo"));
+  const currencySymbol = isIndian ? "₹" : "$";
 
   return (
     <div className="quantum-card mb-6 fade-in-up">
@@ -32,9 +34,9 @@ function StockInfoCard({ symbol, stockInfo }) {
 
           {/* Price */}
           <div className="flex items-end gap-2 mt-2">
-            <span className="text-3xl font-bold text-white">${stock.price}</span>
+            <span className="text-3xl font-bold text-white">{currencySymbol}{stock.price}</span>
             <span className={`text-sm mb-1 ${isPositive ? "text-emerald-400" : "text-red-400"}`}>
-              {isPositive ? "▲" : "▼"} ${Math.abs(stock.change)}
+              {isPositive ? "▲" : "▼"} {currencySymbol}{Math.abs(stock.change)}
             </span>
           </div>
         </div>
@@ -69,7 +71,7 @@ function StockInfoCard({ symbol, stockInfo }) {
           </div>
           <div>
             <p className="text-slate-500 text-xs">MA 50d</p>
-            <p className="text-white font-semibold">${stock.moving_avg_50}</p>
+            <p className="text-white font-semibold">{currencySymbol}{stock.moving_avg_50}</p>
           </div>
         </div>
 
@@ -78,8 +80,7 @@ function StockInfoCard({ symbol, stockInfo }) {
           <p className="text-slate-500 text-xs mb-1">7-Day Trend</p>
           {timeframes && (
             <MiniChart
-              prices={timeframes.weekly}
-              labels={timeframes.labels}
+              prices={timeframes["1d"] ? timeframes["1d"].slice(-15) : []}
             />
           )}
         </div>

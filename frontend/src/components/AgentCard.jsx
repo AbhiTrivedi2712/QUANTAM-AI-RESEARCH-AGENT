@@ -29,23 +29,23 @@ function AgentCard({ title, icon, verdict, confidence, reason, details, delay = 
   return (
     <div
       onClick={onExpand}
-      className="group relative flex flex-col justify-between rounded-2xl border border-slate-800/80 bg-[#070718]/45 backdrop-blur-xl p-5 cursor-pointer hover:border-purple-500/40 hover:-translate-y-1.5 transition-all duration-300 shadow-xl overflow-hidden active:scale-98 select-none"
+      className="quantum-card group relative flex flex-col justify-between p-5 cursor-pointer overflow-hidden active:scale-98 select-none"
       style={{
         animationDelay: `${delay}s`,
-        boxShadow: "0 0 25px rgba(139, 92, 246, 0.02)",
+        boxShadow: "0 4px 20px -2px rgba(0, 0, 0, 0.4), 0 0 1px 1px rgba(255, 255, 255, 0.03)",
       }}
     >
       {/* Glow effect on hover */}
-      <div className="absolute inset-0 bg-gradient-to-br from-purple-600/5 to-cyan-500/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-cyan-500/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
 
       <div>
         {/* Header Title Row */}
-        <div className="flex items-center justify-between border-b border-slate-800/50 pb-3 mb-4">
+        <div className="flex items-center justify-between border-b border-white/5 pb-3 mb-4">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-purple-600/10 border border-purple-500/20 flex items-center justify-center text-sm shadow-inner group-hover:scale-110 transition-transform duration-300">
-              {isTech && <TrendingUp size={14} className="text-purple-400" />}
-              {isFund && <Landmark size={14} className="text-indigo-400" />}
-              {isSent && <Newspaper size={14} className="text-cyan-400" />}
+            <div className="w-8 h-8 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-sm shadow-inner group-hover:scale-110 transition-transform duration-300">
+              {isTech && <TrendingUp size={14} className="text-blue-400" />}
+              {isFund && <Landmark size={14} className="text-sky-400" />}
+              {isSent && <Newspaper size={14} className="text-teal-400" />}
             </div>
             <div>
               <h4 className="font-bold text-white text-xs tracking-wider uppercase font-mono">{title.split(" ")[0]} NODE</h4>
@@ -63,7 +63,7 @@ function AgentCard({ title, icon, verdict, confidence, reason, details, delay = 
             <span className="text-slate-500 font-bold uppercase tracking-wider">Conviction</span>
             <span className="text-white font-black">{confidence}%</span>
           </div>
-          <div className="h-1.5 rounded-full bg-[#101026] overflow-hidden">
+          <div className="h-1.5 rounded-full bg-[#060816] overflow-hidden">
             <div 
               className={`h-full rounded-full transition-all duration-1000 ${getConfFillStyle(verdict)}`} 
               style={{ width: `${confidence}%` }} 
@@ -73,7 +73,7 @@ function AgentCard({ title, icon, verdict, confidence, reason, details, delay = 
 
         {/* Custom Quick Metrics summary */}
         {isTech && details && (
-          <div className="grid grid-cols-2 gap-2 text-[10px] font-mono bg-[#03030d] p-2.5 rounded-xl border border-white/5 mb-4">
+          <div className="grid grid-cols-2 gap-2 text-[10px] font-mono bg-[#060816]/60 p-2.5 rounded-xl border border-white/5 mb-4">
             <div>
               <span className="text-slate-500 block">S/R Proximity</span>
               <span className="text-white font-bold block mt-0.5">{(details.distance_to_support || 0).toFixed(1)}%</span>
@@ -86,7 +86,7 @@ function AgentCard({ title, icon, verdict, confidence, reason, details, delay = 
         )}
 
         {isFund && details && (
-          <div className="grid grid-cols-2 gap-2 text-[10px] font-mono bg-[#03030d] p-2.5 rounded-xl border border-white/5 mb-4">
+          <div className="grid grid-cols-2 gap-2 text-[10px] font-mono bg-[#060816]/60 p-2.5 rounded-xl border border-white/5 mb-4">
             <div>
               <span className="text-slate-500 block">Health Rating</span>
               <span className="text-white font-bold block mt-0.5">{details.health_score}/100</span>
@@ -99,7 +99,7 @@ function AgentCard({ title, icon, verdict, confidence, reason, details, delay = 
         )}
 
         {isSent && details && (
-          <div className="grid grid-cols-2 gap-2 text-[10px] font-mono bg-[#03030d] p-2.5 rounded-xl border border-white/5 mb-4">
+          <div className="grid grid-cols-2 gap-2 text-[10px] font-mono bg-[#060816]/60 p-2.5 rounded-xl border border-white/5 mb-4">
             <div>
               <span className="text-slate-500 block">Bullish Ratio</span>
               <span className="text-emerald-400 font-bold block mt-0.5">{Math.round(details.positive_ratio * 100)}%</span>
@@ -117,7 +117,7 @@ function AgentCard({ title, icon, verdict, confidence, reason, details, delay = 
         </p>
       </div>
 
-      <div className="mt-4 pt-3 border-t border-slate-800/40 flex justify-between items-center text-[9px] font-mono text-purple-400 font-bold tracking-wider group-hover:text-purple-300">
+      <div className="mt-4 pt-3 border-t border-white/5 flex justify-between items-center text-[9px] font-mono text-blue-400 font-bold tracking-wider group-hover:text-blue-300">
         <span>LAUNCH TERMINAL</span>
         <span>→</span>
       </div>

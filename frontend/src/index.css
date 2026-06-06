@@ -1,152 +1,157 @@
-/* index.css — Global Styles */
-/* Import Google Font for professional typography */
+/* index.css — Premium SaaS Styles */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap');
 
-/* Tailwind base directives */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* ── Base Styles ──────────────────────────────────────────────────────────── */
 * {
   box-sizing: border-box;
 }
 
 body {
   margin: 0;
-  background-color: #0a0a1a;
-  color: #e2e8f0;
-  font-family: 'Inter', sans-serif;
+  background-color: #060816;
+  color: #f3f4f6;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   min-height: 100vh;
+  overflow-x: hidden;
 }
 
-/* Scrollbar Styling */
+/* Scrollbar overrides */
 ::-webkit-scrollbar {
-  width: 6px;
+  width: 5px;
+  height: 5px;
 }
 ::-webkit-scrollbar-track {
-  background: #0f0f2a;
+  background: #0b1020;
 }
 ::-webkit-scrollbar-thumb {
-  background: #7c3aed;
-  border-radius: 3px;
+  background: #1e293b;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #3b82f6;
 }
 
-/* ── Custom Component Classes ─────────────────────────────────────────────── */
 @layer components {
-
-  /* Dark glassmorphism card */
+  /* Premium Glassmorphic Card (Bloomberg/Stripe modern style) */
   .quantum-card {
-    @apply bg-[#0f0f2a] border border-[#1e1e4a] rounded-2xl p-6;
-    box-shadow: 0 0 30px rgba(124, 58, 237, 0.08);
-    transition: box-shadow 0.3s ease, transform 0.3s ease;
+    @apply rounded-2xl p-6 border transition-all duration-300;
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(16px);
   }
 
   .quantum-card:hover {
-    box-shadow: 0 0 40px rgba(124, 58, 237, 0.2), 0 0 60px rgba(6, 182, 212, 0.08);
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(59, 130, 246, 0.2);
+    box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5), 0 0 1px 1px rgba(59, 130, 246, 0.1);
     transform: translateY(-2px);
   }
 
-  /* Glowing purple/cyan gradient button */
+  /* Flat SaaS Buttons */
   .btn-primary {
-    @apply px-6 py-3 rounded-xl font-semibold text-white cursor-pointer;
-    background: linear-gradient(135deg, #7c3aed, #06b6d4);
-    transition: all 0.3s ease;
-    border: none;
+    @apply px-5 py-2.5 rounded-lg font-semibold text-white cursor-pointer text-sm transition-all duration-200;
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    box-shadow: 0 4px 12px -2px rgba(59, 130, 246, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
   }
 
   .btn-primary:hover {
-    opacity: 0.9;
+    background: linear-gradient(135deg, #60a5fa, #2563eb);
+    box-shadow: 0 6px 16px -2px rgba(59, 130, 246, 0.4);
     transform: translateY(-1px);
-    box-shadow: 0 0 20px rgba(124, 58, 237, 0.5);
   }
 
-  .btn-primary:disabled {
-    @apply opacity-50 cursor-not-allowed;
-    transform: none;
+  .btn-secondary {
+    @apply px-5 py-2.5 rounded-lg font-semibold text-slate-300 hover:text-white bg-white/5 hover:bg-white/10 cursor-pointer text-sm transition-all duration-200;
+    border: 1px solid rgba(255, 255, 255, 0.05);
   }
 
-  /* Search input */
+  .btn-secondary:hover {
+    transform: translateY(-1px);
+    border-color: rgba(255, 255, 255, 0.15);
+  }
+
+  /* Search Input */
   .search-input {
-    @apply bg-[#0f0f2a] border border-[#1e1e4a] text-white rounded-xl px-5 py-3 outline-none;
-    @apply placeholder-slate-500 text-lg;
-    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    @apply rounded-xl px-5 py-3 outline-none text-white transition-all duration-300;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    @apply placeholder-slate-500 text-base;
   }
 
   .search-input:focus {
-    border-color: #7c3aed;
-    box-shadow: 0 0 15px rgba(124, 58, 237, 0.3);
+    border-color: #3b82f6;
+    background: rgba(255, 255, 255, 0.04);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
   }
 
-  /* Gradient text effect */
+  /* Gradient text */
   .gradient-text {
-    background: linear-gradient(135deg, #a78bfa, #06b6d4);
+    background: linear-gradient(135deg, #ffffff 0%, #93c5fd 50%, #3b82f6 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
 
-  /* Confidence bar */
+  /* Flat Confidence Bars */
   .confidence-bar {
-    @apply w-full h-2 bg-[#1e1e4a] rounded-full overflow-hidden;
+    @apply w-full h-1.5 bg-slate-800 rounded-full overflow-hidden;
   }
 
   .confidence-fill {
     @apply h-full rounded-full;
-    background: linear-gradient(90deg, #7c3aed, #06b6d4);
-    transition: width 0.8s ease;
+    background: linear-gradient(90deg, #3b82f6, #60a5fa);
+    transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   /* Status badges */
   .badge {
-    @apply px-3 py-1 rounded-full text-xs font-semibold;
+    @apply px-2.5 py-0.5 rounded text-[10px] font-mono font-bold tracking-wide uppercase;
   }
 
-  .badge-bullish  { @apply bg-emerald-500/20 text-emerald-400 border border-emerald-500/30; }
-  .badge-bearish  { @apply bg-red-500/20 text-red-400 border border-red-500/30; }
-  .badge-neutral  { @apply bg-amber-500/20 text-amber-400 border border-amber-500/30; }
-  .badge-buy      { @apply bg-emerald-500/20 text-emerald-400 border border-emerald-500/40; }
-  .badge-sell     { @apply bg-red-500/20 text-red-400 border border-red-500/40; }
-  .badge-hold     { @apply bg-amber-500/20 text-amber-400 border border-amber-500/40; }
+  .badge-bullish  { @apply bg-emerald-500/10 text-emerald-400 border border-emerald-500/20; }
+  .badge-bearish  { @apply bg-red-500/10 text-red-400 border border-red-500/20; }
+  .badge-neutral  { @apply bg-amber-500/10 text-amber-400 border border-amber-500/20; }
+  
+  .badge-buy      { @apply bg-emerald-500/10 text-emerald-400 border border-emerald-500/20; }
+  .badge-sell     { @apply bg-red-500/10 text-red-400 border border-red-500/20; }
+  .badge-hold     { @apply bg-amber-500/10 text-amber-400 border border-amber-500/20; }
 }
 
-/* ── Animations ────────────────────────────────────────────────────────────── */
-
-/* Fade in from bottom */
+/* ── Custom Animations ────────────────────────────────────────────────────── */
 @keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(20px); }
+  from { opacity: 0; transform: translateY(12px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
 .fade-in-up {
-  animation: fadeInUp 0.5s ease forwards;
+  animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-/* Spinning loader */
 @keyframes spin-slow {
   to { transform: rotate(360deg); }
 }
 
 .spin-slow {
-  animation: spin-slow 1.5s linear infinite;
+  animation: spin-slow 2s linear infinite;
 }
 
-/* Pulse glow for recommendation card */
-@keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 0 20px rgba(124, 58, 237, 0.3); }
-  50%       { box-shadow: 0 0 50px rgba(124, 58, 237, 0.6), 0 0 80px rgba(6, 182, 212, 0.2); }
-}
-
-.pulse-glow {
-  animation: pulse-glow 2s ease-in-out infinite;
-}
-
-/* Node animation for architecture diagram */
 @keyframes nodeFloat {
   0%, 100% { transform: translateY(0px); }
-  50%       { transform: translateY(-5px); }
+  50%       { transform: translateY(-4px); }
 }
 
 .node-float {
-  animation: nodeFloat 3s ease-in-out infinite;
+  animation: nodeFloat 4s ease-in-out infinite;
+}
+
+/* Financial Grid Background Overlay */
+.financial-grid {
+  background-size: 40px 40px;
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.01) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.01) 1px, transparent 1px);
 }

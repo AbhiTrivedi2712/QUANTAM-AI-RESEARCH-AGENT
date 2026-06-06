@@ -29,10 +29,13 @@ function KpiCards({ data }) {
   const biasStyle = getBiasStyle(market_bias);
   const riskStyle = getRiskStyle(risk);
 
+  const isIndian = data.stock && (data.stock.endsWith(".NS") || data.stock.endsWith(".BO") || data.stock.endsWith(".ns") || data.stock.endsWith(".bo"));
+  const currencySymbol = isIndian ? "₹" : "$";
+
   const cards = [
     {
       label: "Current Price",
-      value: `$${price.toFixed(2)}`,
+      value: `${currencySymbol}${price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
       icon: isUp ? "💵" : "💵",
       valueClass: "text-white",
       subtext: `${isUp ? "▲" : "▼"} ${isUp ? "+" : ""}${changePct.toFixed(2)}% today`,

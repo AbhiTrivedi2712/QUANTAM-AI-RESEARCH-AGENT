@@ -20,12 +20,12 @@ import {
 } from "recharts";
 
 // Helper to format large financial numbers
-function formatAmount(num) {
+function formatAmount(num, currencySymbol = "$") {
   if (!num) return "N/A";
-  if (Math.abs(num) >= 1e12) return `$${(num / 1e12).toFixed(2)}T`;
-  if (Math.abs(num) >= 1e9) return `$${(num / 1e9).toFixed(2)}B`;
-  if (Math.abs(num) >= 1e6) return `$${(num / 1e6).toFixed(2)}M`;
-  return `$${num.toLocaleString()}`;
+  if (Math.abs(num) >= 1e12) return `${currencySymbol}${(num / 1e12).toFixed(2)}T`;
+  if (Math.abs(num) >= 1e9) return `${currencySymbol}${(num / 1e9).toFixed(2)}B`;
+  if (Math.abs(num) >= 1e6) return `${currencySymbol}${(num / 1e6).toFixed(2)}M`;
+  return `${currencySymbol}${num.toLocaleString()}`;
 }
 
 export default function AgentModal({ isOpen, onClose, type, details, stockInfoData }) {
@@ -38,7 +38,7 @@ export default function AgentModal({ isOpen, onClose, type, details, stockInfoDa
   const COLORS = {
     bullish: "#10b981", // Emerald
     bearish: "#ef4444", // Rose
-    neutral: "#a855f7", // Purple
+    neutral: "#38bdf8", // Sky blue
     gray: "#64748b" // Slate
   };
 
@@ -47,15 +47,15 @@ export default function AgentModal({ isOpen, onClose, type, details, stockInfoDa
       {/* Semi-transparent backdrop blur */}
       <div 
         onClick={onClose}
-        className="fixed inset-0 bg-[#02020a]/80 backdrop-blur-md transition-opacity duration-300"
+        className="fixed inset-0 bg-[#060816]/80 backdrop-blur-md transition-opacity duration-300"
       />
 
       {/* Main Terminal Window */}
-      <div className="relative w-full max-w-5xl h-[85vh] md:h-[80vh] flex flex-col bg-[#050512]/90 border border-slate-800/80 rounded-2xl overflow-hidden shadow-2xl z-10 transition-all duration-300 transform scale-100 flex-1">
+      <div className="relative w-full max-w-5xl h-[85vh] md:h-[80vh] flex flex-col bg-[#060816]/95 border border-white/5 rounded-2xl overflow-hidden shadow-2xl z-10 transition-all duration-300 transform scale-100 flex-1">
         {/* Terminal Header */}
-        <div className="flex items-center justify-between border-b border-[#1e1e4a]/60 bg-[#0a0a1f]/95 px-6 py-4">
+        <div className="flex items-center justify-between border-b border-white/5 bg-[#0b1020]/95 px-6 py-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-purple-600/10 border border-purple-500/20 flex items-center justify-center text-lg shadow-inner">
+            <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-lg shadow-inner">
               {type === "technical" && "📈"}
               {type === "fundamental" && "🏦"}
               {type === "sentiment" && "📰"}
@@ -71,18 +71,18 @@ export default function AgentModal({ isOpen, onClose, type, details, stockInfoDa
           </div>
           <button 
             onClick={onClose}
-            className="w-8 h-8 rounded-lg border border-[#1e1e4a] hover:border-purple-500/40 flex items-center justify-center text-slate-400 hover:text-white transition-all bg-[#0a0a1f]/80"
+            className="w-8 h-8 rounded-lg border border-white/5 hover:border-blue-500/40 flex items-center justify-center text-slate-400 hover:text-white transition-all bg-[#0b1020]/80"
           >
             <X size={16} />
           </button>
         </div>
 
         {/* Modal Scrollable Workspace */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar bg-gradient-to-b from-[#050512]/60 to-[#02020a]/80">
+        <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar bg-gradient-to-b from-[#060816]/60 to-[#0b1020]/80">
           
           {/* Header Summary Dashboard row */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="bg-[#0c0c28]/60 p-4 rounded-xl border border-white/5 flex flex-col justify-between">
+            <div className="bg-[#0b1020]/60 p-4 rounded-xl border border-white/5 flex flex-col justify-between">
               <span className="text-slate-500 text-[10px] font-bold uppercase tracking-wider font-mono">Consensus verdict</span>
               <span className={`text-xl font-bold mt-1.5 ${
                 ["bullish", "strong", "positive"].includes(details.trend?.toLowerCase() || details.fundamental?.toLowerCase() || details.sentiment?.toLowerCase() || "")
@@ -95,12 +95,12 @@ export default function AgentModal({ isOpen, onClose, type, details, stockInfoDa
               </span>
             </div>
 
-            <div className="bg-[#0c0c28]/60 p-4 rounded-xl border border-white/5 flex flex-col justify-between">
+            <div className="bg-[#0b1020]/60 p-4 rounded-xl border border-white/5 flex flex-col justify-between">
               <span className="text-slate-500 text-[10px] font-bold uppercase tracking-wider font-mono">Confidence Level</span>
               <span className="text-xl font-bold mt-1.5 text-white font-mono">{details.confidence}%</span>
             </div>
 
-            <div className="bg-[#0c0c28]/60 p-4 rounded-xl border border-white/5 flex flex-col justify-between">
+            <div className="bg-[#0b1020]/60 p-4 rounded-xl border border-white/5 flex flex-col justify-between">
               <span className="text-slate-500 text-[10px] font-bold uppercase tracking-wider font-mono">Integrity Status</span>
               <span className={`text-xs font-bold mt-1.5 inline-flex items-center gap-1.5 px-2 py-0.5 rounded border w-fit ${
                 details.fallback_active
@@ -111,9 +111,9 @@ export default function AgentModal({ isOpen, onClose, type, details, stockInfoDa
               </span>
             </div>
 
-            <div className="bg-[#0c0c28]/60 p-4 rounded-xl border border-white/5 flex flex-col justify-between">
+            <div className="bg-[#0b1020]/60 p-4 rounded-xl border border-white/5 flex flex-col justify-between">
               <span className="text-slate-500 text-[10px] font-bold uppercase tracking-wider font-mono">Telemetry Source</span>
-              <span className="text-xs font-mono text-purple-400 font-bold mt-1.5">
+              <span className="text-xs font-mono text-blue-400 font-bold mt-1.5">
                 {stock.source || "System Core"}
               </span>
             </div>
@@ -126,10 +126,10 @@ export default function AgentModal({ isOpen, onClose, type, details, stockInfoDa
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
               
               {/* Left Column: Interactive Price Chart */}
-              <div className="lg:col-span-8 bg-[#0c0c24]/50 border border-slate-800/80 rounded-xl p-5 flex flex-col justify-between">
+              <div className="lg:col-span-8 bg-[#0b1020]/50 border border-white/5 rounded-xl p-5 flex flex-col justify-between">
                 <div className="flex justify-between items-center mb-4">
                   <h3 className="text-white font-bold text-xs uppercase tracking-wider font-mono flex items-center gap-1.5">
-                    <TrendingUp size={14} className="text-purple-400" /> TradingView-Style Price Chart
+                    <TrendingUp size={14} className="text-blue-400" /> TradingView-Style Price Chart
                   </h3>
                   <span className="text-[9px] text-slate-500 font-mono">OHLCV 1D Price History</span>
                 </div>
@@ -140,22 +140,22 @@ export default function AgentModal({ isOpen, onClose, type, details, stockInfoDa
                       <AreaChart data={timeframes["1d"].map((val, idx) => ({ idx, Price: val }))}>
                         <defs>
                           <linearGradient id="colorPrice" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.2}/>
-                            <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0}/>
+                            <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.2}/>
+                            <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
                           </linearGradient>
                         </defs>
-                        <CartesianGrid stroke="#1c1c38" strokeDasharray="3 3" vertical={false} />
+                        <CartesianGrid stroke="rgba(255,255,255,0.05)" strokeDasharray="3 3" vertical={false} />
                         <XAxis dataKey="idx" hide />
-                        <YAxis domain={["dataMin - 10", "dataMax + 10"]} stroke="#64748b" tickFormatter={(v) => `$${v}`} fontMono />
+                        <YAxis domain={["dataMin - 10", "dataMax + 10"]} stroke="#64748b" tickFormatter={(v) => `${currencySymbol}${v}`} fontMono />
                         <Tooltip 
-                          contentStyle={{ backgroundColor: "#0c0c24", borderColor: "#1e1e4a", borderRadius: "8px" }}
-                          labelStyle={{ color: "#a855f7" }}
+                          contentStyle={{ backgroundColor: "#0b1020", borderColor: "rgba(255,255,255,0.08)", borderRadius: "8px" }}
+                          labelStyle={{ color: "#3b82f6" }}
                           itemStyle={{ color: "#fff" }}
                         />
                         {/* Reference lines for S/R Extrema */}
-                        <ReferenceLine y={details.support_level} label={{ value: `Support Floor: $${details.support_level?.toFixed(2)}`, fill: "#10b981", position: "bottom", fontSize: 10, fontFamily: "monospace" }} stroke="#10b981" strokeDasharray="3 3" />
-                        <ReferenceLine y={details.resistance_level} label={{ value: `Resistance Ceiling: $${details.resistance_level?.toFixed(2)}`, fill: "#ef4444", position: "top", fontSize: 10, fontFamily: "monospace" }} stroke="#ef4444" strokeDasharray="3 3" />
-                        <Area type="monotone" dataKey="Price" stroke="#8b5cf6" strokeWidth={2} fillOpacity={1} fill="url(#colorPrice)" />
+                        <ReferenceLine y={details.support_level} label={{ value: `Support Floor: ${currencySymbol}${details.support_level?.toFixed(2)}`, fill: "#10b981", position: "bottom", fontSize: 10, fontFamily: "monospace" }} stroke="#10b981" strokeDasharray="3 3" />
+                        <ReferenceLine y={details.resistance_level} label={{ value: `Resistance Ceiling: ${currencySymbol}${details.resistance_level?.toFixed(2)}`, fill: "#ef4444", position: "top", fontSize: 10, fontFamily: "monospace" }} stroke="#ef4444" strokeDasharray="3 3" />
+                        <Area type="monotone" dataKey="Price" stroke="#3b82f6" strokeWidth={2} fillOpacity={1} fill="url(#colorPrice)" />
                       </AreaChart>
                     </ResponsiveContainer>
                   ) : (
@@ -165,7 +165,7 @@ export default function AgentModal({ isOpen, onClose, type, details, stockInfoDa
               </div>
 
               {/* Right Column: RSI Speedometer & Extrema Track */}
-              <div className="lg:col-span-4 bg-[#0c0c24]/50 border border-slate-800/80 rounded-xl p-5 flex flex-col justify-between">
+              <div className="lg:col-span-4 bg-[#0b1020]/50 border border-white/5 rounded-xl p-5 flex flex-col justify-between">
                 <div>
                   <h3 className="text-white font-bold text-xs uppercase tracking-wider font-mono flex items-center gap-1.5 mb-4">
                     <Activity size={14} className="text-emerald-400" /> RSI Gauge & Momentum
@@ -177,8 +177,8 @@ export default function AgentModal({ isOpen, onClose, type, details, stockInfoDa
                       <PieChart>
                         <Pie
                           data={[
-                            { name: "RSI", value: stock.rsi || 50, fill: stock.rsi >= 70 ? "#ef4444" : stock.rsi <= 30 ? "#10b981" : "#a855f7" },
-                            { name: "Remaining", value: 100 - (stock.rsi || 50), fill: "#13132d" }
+                            { name: "RSI", value: stock.rsi || 50, fill: stock.rsi >= 70 ? "#ef4444" : stock.rsi <= 30 ? "#10b981" : "#38bdf8" },
+                            { name: "Remaining", value: 100 - (stock.rsi || 50), fill: "#060816" }
                           ]}
                           cx="50%"
                           cy="80%"
@@ -196,7 +196,7 @@ export default function AgentModal({ isOpen, onClose, type, details, stockInfoDa
                     <div className="absolute top-[50%] flex flex-col items-center">
                       <span className="text-2xl font-black text-white font-mono">{stock.rsi || "N/A"}</span>
                       <span className={`text-[9px] font-bold font-mono uppercase ${
-                        stock.rsi >= 70 ? "text-red-400" : stock.rsi <= 30 ? "text-emerald-400" : "text-purple-400"
+                        stock.rsi >= 70 ? "text-red-400" : stock.rsi <= 30 ? "text-emerald-400" : "text-blue-400"
                       }`}>
                         {stock.rsi >= 70 ? "Overbought" : stock.rsi <= 30 ? "Oversold" : "Neutral"}
                       </span>
@@ -212,17 +212,17 @@ export default function AgentModal({ isOpen, onClose, type, details, stockInfoDa
                   </div>
                   <div className="flex justify-between items-center text-[10px]">
                     <span className="text-slate-500">Support Floor</span>
-                    <span className="text-emerald-400 font-bold">${details.support_level?.toFixed(2)}</span>
+                    <span className="text-emerald-400 font-bold">{currencySymbol}{details.support_level?.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between items-center text-[10px]">
                     <span className="text-slate-500">Resistance Ceiling</span>
-                    <span className="text-red-400 font-bold">${details.resistance_level?.toFixed(2)}</span>
+                    <span className="text-red-400 font-bold">{currencySymbol}{details.resistance_level?.toFixed(2)}</span>
                   </div>
                 </div>
               </div>
 
               {/* Bottom Row: MACD Oscillator & Timeframe grid */}
-              <div className="lg:col-span-6 bg-[#0c0c24]/50 border border-slate-800/80 rounded-xl p-5 flex flex-col justify-between">
+              <div className="lg:col-span-6 bg-[#0b1020]/50 border border-white/5 rounded-xl p-5 flex flex-col justify-between">
                 <h3 className="text-white font-bold text-xs uppercase tracking-wider font-mono flex items-center gap-1.5 mb-4">
                   📊 MACD Signal Line & Hist
                 </h3>
@@ -235,10 +235,10 @@ export default function AgentModal({ isOpen, onClose, type, details, stockInfoDa
                       { name: "P-1", val: details.macd_hist ? details.macd_hist * 1.1 : 0.8 },
                       { name: "Current", val: details.macd_hist || 0 }
                     ]}>
-                      <CartesianGrid stroke="#1e1e4a/30" strokeDasharray="3 3" vertical={false} />
+                      <CartesianGrid stroke="rgba(255,255,255,0.05)" strokeDasharray="3 3" vertical={false} />
                       <XAxis dataKey="name" stroke="#64748b" fontSize={10} fontMono />
                       <YAxis stroke="#64748b" fontSize={10} fontMono />
-                      <Tooltip contentStyle={{ backgroundColor: "#0c0c24", borderColor: "#1e1e4a" }} />
+                      <Tooltip contentStyle={{ backgroundColor: "#0b1020", borderColor: "rgba(255,255,255,0.08)" }} />
                       <Bar dataKey="val">
                         {[
                           { name: "P-4", val: details.macd_hist ? details.macd_hist * 0.4 : -0.2 },
@@ -256,7 +256,7 @@ export default function AgentModal({ isOpen, onClose, type, details, stockInfoDa
               </div>
 
               {/* Timeframe Trends grid */}
-              <div className="lg:col-span-6 bg-[#0c0c24]/50 border border-slate-800/80 rounded-xl p-5 flex flex-col justify-between">
+              <div className="lg:col-span-6 bg-[#0b1020]/50 border border-white/5 rounded-xl p-5 flex flex-col justify-between">
                 <h3 className="text-white font-bold text-xs uppercase tracking-wider font-mono flex items-center gap-1.5 mb-4">
                   ⏰ Multi-Timeframe Trend Structures
                 </h3>
@@ -265,7 +265,7 @@ export default function AgentModal({ isOpen, onClose, type, details, stockInfoDa
                     const isUp = trend.toLowerCase().includes("bullish");
                     const isDown = trend.toLowerCase().includes("bearish");
                     return (
-                      <div key={tf} className="bg-[#050512] rounded-xl border border-[#1e1e4a]/60 p-4">
+                      <div key={tf} className="bg-[#060816] rounded-xl border border-white/5 p-4">
                         <span className="text-slate-500 font-bold block mb-2">{tf}</span>
                         <span className={`text-[10px] font-black block leading-snug ${
                           isUp ? "text-emerald-400" : isDown ? "text-red-400" : "text-amber-400"
@@ -279,7 +279,7 @@ export default function AgentModal({ isOpen, onClose, type, details, stockInfoDa
               </div>
 
               {/* AI Narrative */}
-              <div className="lg:col-span-12 bg-[#0c0c24]/50 border border-slate-800/80 rounded-xl p-5">
+              <div className="lg:col-span-12 bg-[#0b1020]/50 border border-white/5 rounded-xl p-5">
                 <h3 className="text-white font-bold text-xs uppercase tracking-wider font-mono flex items-center gap-1.5 mb-2.5">
                   🤖 Technical Agent Commentary
                 </h3>
@@ -295,7 +295,7 @@ export default function AgentModal({ isOpen, onClose, type, details, stockInfoDa
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
               
               {/* Left Column: Health Score Radials */}
-              <div className="lg:col-span-4 bg-[#0c0c24]/50 border border-slate-800/80 rounded-xl p-5 flex flex-col justify-between">
+              <div className="lg:col-span-4 bg-[#0b1020]/50 border border-white/5 rounded-xl p-5 flex flex-col justify-between">
                 <h3 className="text-white font-bold text-xs uppercase tracking-wider font-mono flex items-center gap-1.5 mb-4">
                   🛡️ Health & Index breakdowns
                 </h3>
@@ -307,7 +307,7 @@ export default function AgentModal({ isOpen, onClose, type, details, stockInfoDa
                       <span className="text-slate-400 font-medium">Balance Sheet Health</span>
                       <span className="text-white font-bold font-mono">{details.health_score}/100</span>
                     </div>
-                    <div className="h-2 rounded-full bg-[#13132d] overflow-hidden">
+                    <div className="h-2 rounded-full bg-[#060816] overflow-hidden">
                       <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${details.health_score}%` }} />
                     </div>
                   </div>
@@ -317,7 +317,7 @@ export default function AgentModal({ isOpen, onClose, type, details, stockInfoDa
                       <span className="text-slate-400 font-medium">Valuation Safety</span>
                       <span className="text-white font-bold font-mono">{details.valuation_score}/100</span>
                     </div>
-                    <div className="h-2 rounded-full bg-[#13132d] overflow-hidden">
+                    <div className="h-2 rounded-full bg-[#060816] overflow-hidden">
                       <div className="h-full bg-cyan-500 rounded-full" style={{ width: `${details.valuation_score}%` }} />
                     </div>
                   </div>
@@ -327,8 +327,8 @@ export default function AgentModal({ isOpen, onClose, type, details, stockInfoDa
                       <span className="text-slate-400 font-medium">Growth Momentum</span>
                       <span className="text-white font-bold font-mono">{details.growth_score}/100</span>
                     </div>
-                    <div className="h-2 rounded-full bg-[#13132d] overflow-hidden">
-                      <div className="h-full bg-purple-500 rounded-full" style={{ width: `${details.growth_score}%` }} />
+                    <div className="h-2 rounded-full bg-[#060816] overflow-hidden">
+                      <div className="h-full bg-blue-500 rounded-full" style={{ width: `${details.growth_score}%` }} />
                     </div>
                   </div>
                 </div>
@@ -355,7 +355,7 @@ export default function AgentModal({ isOpen, onClose, type, details, stockInfoDa
               </div>
 
               {/* Middle Column: Side-by-Side Revenue Bar Chart */}
-              <div className="lg:col-span-8 bg-[#0c0c24]/50 border border-slate-800/80 rounded-xl p-5 flex flex-col justify-between">
+              <div className="lg:col-span-8 bg-[#0b1020]/50 border border-white/5 rounded-xl p-5 flex flex-col justify-between">
                 <div className="flex justify-between items-center mb-4">
                   <h3 className="text-white font-bold text-xs uppercase tracking-wider font-mono flex items-center gap-1.5">
                     📊 Estimated Revenue & Income Growth
@@ -383,13 +383,13 @@ export default function AgentModal({ isOpen, onClose, type, details, stockInfoDa
                           Income: details.metrics.net_income
                         }
                       ]}>
-                        <CartesianGrid stroke="#1c1c38" strokeDasharray="3 3" vertical={false} />
+                        <CartesianGrid stroke="rgba(255,255,255,0.05)" strokeDasharray="3 3" vertical={false} />
                         <XAxis dataKey="year" stroke="#64748b" fontSize={10} fontMono />
-                        <YAxis stroke="#64748b" fontSize={10} tickFormatter={(v) => formatAmount(v)} fontMono />
-                        <Tooltip contentStyle={{ backgroundColor: "#0c0c24", borderColor: "#1e1e4a" }} formatter={(v) => formatAmount(v)} />
+                        <YAxis stroke="#64748b" fontSize={10} tickFormatter={(v) => formatAmount(v, currencySymbol)} fontMono />
+                        <Tooltip contentStyle={{ backgroundColor: "#0b1020", borderColor: "rgba(255,255,255,0.08)" }} formatter={(v) => formatAmount(v, currencySymbol)} />
                         <Legend wrapperStyle={{ fontSize: "10px", fontFamily: "monospace" }} />
                         <Bar dataKey="Revenue" fill="#06b6d4" radius={[4, 4, 0, 0]} />
-                        <Bar dataKey="Income" fill="#8b5cf6" radius={[4, 4, 0, 0]} />
+                        <Bar dataKey="Income" fill="#3b82f6" radius={[4, 4, 0, 0]} />
                       </BarChart>
                     </ResponsiveContainer>
                   )}
@@ -397,33 +397,33 @@ export default function AgentModal({ isOpen, onClose, type, details, stockInfoDa
               </div>
 
               {/* Ratios & Corporate Data details */}
-              <div className="lg:col-span-12 bg-[#0c0c24]/50 border border-slate-800/80 rounded-xl p-5">
+              <div className="lg:col-span-12 bg-[#0b1020]/50 border border-white/5 rounded-xl p-5">
                 <h3 className="text-white font-bold text-xs uppercase tracking-wider font-mono flex items-center gap-1.5 mb-4">
                   🏦 Key Solvency & Attractiveness Ratios
                 </h3>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs font-mono">
-                  <div className="bg-[#050512] rounded-xl border border-white/5 p-4 text-center">
+                  <div className="bg-[#060816] rounded-xl border border-white/5 p-4 text-center">
                     <span className="text-slate-500 block">Trailing P/E</span>
                     <span className="text-white text-base font-bold block mt-1">
                       {stock.pe_ratio !== null ? `${stock.pe_ratio}x` : "N/A"}
                     </span>
                   </div>
 
-                  <div className="bg-[#050512] rounded-xl border border-white/5 p-4 text-center">
+                  <div className="bg-[#060816] rounded-xl border border-white/5 p-4 text-center">
                     <span className="text-slate-500 block">Total Revenue</span>
                     <span className="text-white text-base font-bold block mt-1">
-                      {formatAmount(stock.total_revenue)}
+                      {formatAmount(stock.total_revenue, currencySymbol)}
                     </span>
                   </div>
 
-                  <div className="bg-[#050512] rounded-xl border border-white/5 p-4 text-center">
+                  <div className="bg-[#060816] rounded-xl border border-white/5 p-4 text-center">
                     <span className="text-slate-500 block">Net Income</span>
                     <span className="text-emerald-400 text-base font-bold block mt-1">
-                      {formatAmount(stock.net_income)}
+                      {formatAmount(stock.net_income, currencySymbol)}
                     </span>
                   </div>
 
-                  <div className="bg-[#050512] rounded-xl border border-white/5 p-4 text-center">
+                  <div className="bg-[#060816] rounded-xl border border-white/5 p-4 text-center">
                     <span className="text-slate-500 block">Revenue Growth</span>
                     <span className={`text-base font-bold block mt-1 ${stock.revenue_growth >= 0 ? "text-emerald-400" : "text-red-400"}`}>
                       {stock.revenue_growth >= 0 ? "+" : ""}{stock.revenue_growth}%
@@ -433,7 +433,7 @@ export default function AgentModal({ isOpen, onClose, type, details, stockInfoDa
               </div>
 
               {/* AI Narrative */}
-              <div className="lg:col-span-12 bg-[#0c0c24]/50 border border-slate-800/80 rounded-xl p-5">
+              <div className="lg:col-span-12 bg-[#0b1020]/50 border border-white/5 rounded-xl p-5">
                 <h3 className="text-white font-bold text-xs uppercase tracking-wider font-mono flex items-center gap-1.5 mb-2.5">
                   🤖 Fundamental Agent Commentary
                 </h3>
@@ -449,7 +449,7 @@ export default function AgentModal({ isOpen, onClose, type, details, stockInfoDa
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
               
               {/* Left Column: News Sentiment Distribution Pie */}
-              <div className="lg:col-span-4 bg-[#0c0c24]/50 border border-slate-800/80 rounded-xl p-5 flex flex-col justify-between">
+              <div className="lg:col-span-4 bg-[#0b1020]/50 border border-white/5 rounded-xl p-5 flex flex-col justify-between">
                 <h3 className="text-white font-bold text-xs uppercase tracking-wider font-mono flex items-center gap-1.5 mb-4">
                   📰 Sentiment Distribution Matrix
                 </h3>
@@ -491,7 +491,7 @@ export default function AgentModal({ isOpen, onClose, type, details, stockInfoDa
                     <span className="text-slate-300 block mt-0.5">{Math.round(details.negative_ratio * 100)}%</span>
                   </div>
                   <div>
-                    <span className="text-purple-400 block font-bold">Neutral</span>
+                    <span className="text-blue-400 block font-bold">Neutral</span>
                     <span className="text-slate-300 block mt-0.5">
                       {Math.round((1 - details.positive_ratio - details.negative_ratio) * 100)}%
                     </span>
@@ -500,7 +500,7 @@ export default function AgentModal({ isOpen, onClose, type, details, stockInfoDa
               </div>
 
               {/* Right Column: Sentiment Timeline Swings */}
-              <div className="lg:col-span-8 bg-[#0c0c24]/50 border border-slate-800/80 rounded-xl p-5 flex flex-col justify-between">
+              <div className="lg:col-span-8 bg-[#0b1020]/50 border border-white/5 rounded-xl p-5 flex flex-col justify-between">
                 <div className="flex justify-between items-center mb-4">
                   <h3 className="text-white font-bold text-xs uppercase tracking-wider font-mono flex items-center gap-1.5">
                     📈 Sentiment Swing Feed Timeline
@@ -515,11 +515,11 @@ export default function AgentModal({ isOpen, onClose, type, details, stockInfoDa
                         idx: idx + 1,
                         Score: art.sentiment === "positive" ? 1 : art.sentiment === "negative" ? -1 : 0
                       }))}>
-                        <CartesianGrid stroke="#1c1c38" strokeDasharray="3 3" vertical={false} />
+                        <CartesianGrid stroke="rgba(255,255,255,0.05)" strokeDasharray="3 3" vertical={false} />
                         <XAxis dataKey="idx" stroke="#64748b" fontSize={9} fontMono />
                         <YAxis domain={[-1.2, 1.2]} ticks={[-1, 0, 1]} stroke="#64748b" tickFormatter={(v) => v === 1 ? "Pos" : v === -1 ? "Neg" : "Neu"} fontSize={9} fontMono />
-                        <Tooltip contentStyle={{ backgroundColor: "#0c0c24", borderColor: "#1e1e4a" }} />
-                        <Line type="monotone" dataKey="Score" stroke="#a855f7" strokeWidth={2.5} dot={{ fill: "#a855f7", radius: 4 }} />
+                        <Tooltip contentStyle={{ backgroundColor: "#0b1020", borderColor: "rgba(255,255,255,0.08)" }} />
+                        <Line type="monotone" dataKey="Score" stroke="#3b82f6" strokeWidth={2.5} dot={{ fill: "#3b82f6", radius: 4 }} />
                       </LineChart>
                     </ResponsiveContainer>
                   ) : (
@@ -529,14 +529,14 @@ export default function AgentModal({ isOpen, onClose, type, details, stockInfoDa
               </div>
 
               {/* Drivers column */}
-              <div className="lg:col-span-12 bg-[#0c0c24]/50 border border-slate-800/80 rounded-xl p-5 grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="lg:col-span-12 bg-[#0b1020]/50 border border-white/5 rounded-xl p-5 grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <h4 className="text-emerald-400 font-bold text-xs uppercase tracking-wider font-mono mb-3 flex items-center gap-1.5">
                     ▲ Bullish Drivers / Catalysts
                   </h4>
                   <ul className="text-xs space-y-2 font-mono">
                     {details.positive_drivers && details.positive_drivers.slice(0, 3).map((drv, idx) => (
-                      <li key={idx} className="flex gap-2 items-start bg-[#050512] p-2.5 rounded-lg border border-white/5">
+                      <li key={idx} className="flex gap-2 items-start bg-[#060816] p-2.5 rounded-lg border border-white/5">
                         <span className="text-emerald-400">✦</span>
                         <span className="text-[11px] text-slate-300 leading-normal">{drv}</span>
                       </li>
@@ -550,7 +550,7 @@ export default function AgentModal({ isOpen, onClose, type, details, stockInfoDa
                   </h4>
                   <ul className="text-xs space-y-2 font-mono">
                     {details.negative_drivers && details.negative_drivers.slice(0, 3).map((drv, idx) => (
-                      <li key={idx} className="flex gap-2 items-start bg-[#050512] p-2.5 rounded-lg border border-white/5">
+                      <li key={idx} className="flex gap-2 items-start bg-[#060816] p-2.5 rounded-lg border border-white/5">
                         <span className="text-red-400">▪</span>
                         <span className="text-[11px] text-slate-300 leading-normal">{drv}</span>
                       </li>
@@ -560,7 +560,7 @@ export default function AgentModal({ isOpen, onClose, type, details, stockInfoDa
               </div>
 
               {/* AI Narrative */}
-              <div className="lg:col-span-12 bg-[#0c0c24]/50 border border-slate-800/80 rounded-xl p-5">
+              <div className="lg:col-span-12 bg-[#0b1020]/50 border border-white/5 rounded-xl p-5">
                 <h3 className="text-white font-bold text-xs uppercase tracking-wider font-mono flex items-center gap-1.5 mb-2.5">
                   🤖 Sentiment Agent Commentary
                 </h3>

@@ -1,7 +1,3 @@
-// App.jsx — Upgraded Financial Intelligence Dashboard
-// Incorporates the TradingView widget, multi-agent orchestration timeline, 
-// search history, telemetry timing readouts, fallback alert indicators, and upgraded cards.
-
 import React, { useState, useEffect } from "react";
 import Header from "./components/Header";
 import SearchBar from "./components/SearchBar";
@@ -14,6 +10,7 @@ import TradingViewChart from "./components/TradingViewChart";
 import NewsInsights from "./components/NewsInsights";
 import SystemStatusCard from "./components/SystemStatusCard";
 import AgentModal from "./components/AgentModal";
+import LandingPage from "./components/LandingPage";
 import { analyzeStock, getStockData, checkBackendHealth } from "./api";
 
 const WORKFLOW_STAGES = [
@@ -25,7 +22,7 @@ const WORKFLOW_STAGES = [
 ];
 
 function App() {
-  const [currentPage, setCurrentPage] = useState("Dashboard");
+  const [currentPage, setCurrentPage] = useState("Home");
   const [isLoading, setIsLoading] = useState(false);
   const [workflowStep, setWorkflowStep] = useState(0); // 0 = idle, 1-5 stages
   const [stageTimes, setStageTimes] = useState({});
@@ -143,19 +140,27 @@ function App() {
       analysisData.final_decision?.fallback_active);
 
   return (
-    <div className="min-h-screen pb-12" style={{ background: "linear-gradient(135deg, #050510 0%, #0c0c20 50%, #050510 100%)" }}>
+    <div className="min-h-screen pb-12" style={{ background: "linear-gradient(135deg, #060816 0%, #0b1020 50%, #060816 100%)" }}>
       {/* Subtle background nodes pattern */}
       <div
         className="fixed inset-0 opacity-20 pointer-events-none"
         style={{
-          backgroundImage: "radial-gradient(circle at 1px 1px, rgba(139, 92, 246, 0.15) 1px, transparent 0)",
+          backgroundImage: "radial-gradient(circle at 1px 1px, rgba(59, 130, 246, 0.08) 1px, transparent 0)",
           backgroundSize: "24px 24px",
         }}
       />
 
       <Header currentPage={currentPage} setCurrentPage={setCurrentPage} />
 
-      {currentPage === "Architecture" ? (
+      {currentPage === "Home" ? (
+        <LandingPage
+          onStartResearch={(sym) => {
+            setCurrentPage("Dashboard");
+            if (sym) handleSearch(sym);
+          }}
+          onViewArchitecture={() => setCurrentPage("Architecture")}
+        />
+      ) : currentPage === "Architecture" ? (
         <ArchitecturePage />
       ) : (
         <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8 relative">
@@ -184,7 +189,7 @@ function App() {
                 key={idx}
                 onClick={() => handleSearch(sym)}
                 disabled={isLoading}
-                className="px-2.5 py-0.5 rounded-full text-xs font-bold font-mono transition-all border border-[#1e1e4a]/60 bg-[#0a0a1a]/40 text-slate-400 hover:text-purple-400 hover:border-purple-500/50 hover:bg-purple-500/5 disabled:opacity-50 disabled:pointer-events-none"
+                className="px-2.5 py-0.5 rounded-full text-xs font-bold font-mono transition-all border border-white/5 bg-[#0b1020]/40 text-slate-400 hover:text-blue-400 hover:border-blue-500/50 hover:bg-blue-500/5 disabled:opacity-50 disabled:pointer-events-none"
               >
                 {sym}
               </button>
@@ -193,14 +198,14 @@ function App() {
 
           {/* ── Orchestration Pipeline Timeline ── */}
           {isLoading && (
-            <div className="quantum-card border-purple-500/20 bg-purple-900/5 mb-8">
-              <p className="text-center text-xs font-bold uppercase tracking-wider text-purple-400 mb-5">
+            <div className="quantum-card border-blue-500/20 bg-blue-950/5 mb-8">
+              <p className="text-center text-xs font-bold uppercase tracking-wider text-blue-400 mb-5">
                 Consensus Orchestration Flow
               </p>
               
               <div className="flex flex-col md:flex-row md:justify-between gap-4 md:gap-2 relative">
                 {/* Horizontal line for desktop connecting stages */}
-                <div className="hidden md:block absolute top-[18px] left-[5%] right-[5%] h-0.5 bg-[#1e1e4a] -z-10" />
+                <div className="hidden md:block absolute top-[18px] left-[5%] right-[5%] h-0.5 bg-slate-800 -z-10" />
 
                 {WORKFLOW_STAGES.map((stage) => {
                   const isActive = workflowStep === stage.id;
@@ -211,10 +216,10 @@ function App() {
                       {/* Status Circle */}
                       <div className={`w-9 h-9 rounded-full border-2 flex items-center justify-center text-xs font-bold font-mono transition-all duration-300 ${
                         isActive 
-                          ? "bg-purple-600 border-purple-400 text-white shadow-lg shadow-purple-600/50 animate-pulse" 
+                          ? "bg-blue-600 border-blue-400 text-white shadow-lg shadow-blue-600/50 animate-pulse" 
                           : isCompleted
-                          ? "bg-[#0f0f2a] border-emerald-500 text-emerald-400"
-                          : "bg-[#050510] border-[#1e1e4a] text-slate-600"
+                          ? "bg-[#0b1020] border-emerald-500 text-emerald-400"
+                          : "bg-[#060816] border-slate-800 text-slate-650 text-slate-500"
                       }`}>
                         {isCompleted ? "✓" : stage.id}
                       </div>
@@ -222,7 +227,7 @@ function App() {
                       {/* Label & Timestamp */}
                       <div className="flex flex-col text-left md:text-center">
                         <span className={`text-xs font-bold tracking-tight transition-colors duration-300 ${
-                          isActive ? "text-purple-400" : isCompleted ? "text-slate-300" : "text-slate-550 text-slate-500"
+                          isActive ? "text-blue-400" : isCompleted ? "text-slate-300" : "text-slate-500"
                         }`}>
                           {stage.label}
                         </span>
@@ -232,7 +237,7 @@ function App() {
                           </span>
                         )}
                         {isActive && !stageTimes[stage.id] && (
-                          <span className="text-[9px] text-purple-500 font-mono animate-pulse mt-0.5">
+                          <span className="text-[9px] text-blue-400 font-mono animate-pulse mt-0.5">
                             Processing...
                           </span>
                         )}
@@ -431,10 +436,10 @@ function App() {
 
           {/* Empty Prompt State */}
           {!analysisData && !isLoading && !error && (
-            <div className="text-center py-24 bg-[#0a0a1a]/30 rounded-3xl border border-[#1e1e4a]/30 quantum-card select-none">
-              <span className="text-5xl block mb-4 filter drop-shadow-[0_0_15px_rgba(139,92,246,0.3)]">🛡️</span>
+            <div className="text-center py-24 bg-[#0b1020]/30 rounded-3xl border border-white/5 quantum-card select-none">
+              <span className="text-5xl block mb-4 filter drop-shadow-[0_0_15px_rgba(59,130,246,0.2)]">🛡️</span>
               <p className="text-slate-400 text-sm font-bold tracking-wide uppercase">Consensus Dashboard Idle</p>
-              <p className="text-slate-650 text-xs mt-2 max-w-md mx-auto font-light">
+              <p className="text-slate-600 text-xs mt-2 max-w-md mx-auto font-light">
                 Submit a valid stock symbol above. The backend will spawn specialized nodes to analyze real-time price variables, company records, and media streams.
               </p>
             </div>

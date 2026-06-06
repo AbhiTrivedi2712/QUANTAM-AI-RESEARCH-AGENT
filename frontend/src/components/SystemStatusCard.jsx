@@ -35,8 +35,8 @@ function SystemStatusCard({ systemStatus }) {
   const cache = getStatusBadge(cache_status);
 
   return (
-    <div className="rounded-2xl border border-[#1e1e4a]/60 bg-[#0a0a1a]/55 backdrop-blur-xl p-5 mb-6 fade-in-up" style={{ animationDelay: "0.1s" }}>
-      <div className="flex items-center justify-between border-b border-[#1e1e4a]/40 pb-3 mb-4">
+    <div className="quantum-card p-5 mb-6 fade-in-up" style={{ animationDelay: "0.1s" }}>
+      <div className="flex items-center justify-between border-b border-white/5 pb-3 mb-4">
         <div>
           <span className="text-slate-500 text-[10px] font-semibold uppercase tracking-wider">Gateway Telemetry</span>
           <h3 className="text-white font-bold text-sm mt-0.5 flex items-center gap-1.5">
@@ -45,7 +45,7 @@ function SystemStatusCard({ systemStatus }) {
         </div>
         <div className="text-right">
           <span className="text-slate-500 text-[10px] block">Latency</span>
-          <span className="text-xs font-mono font-bold text-purple-400">{execution_time_sec}s</span>
+          <span className="text-xs font-mono font-bold text-blue-400">{execution_time_sec}s</span>
         </div>
       </div>
 

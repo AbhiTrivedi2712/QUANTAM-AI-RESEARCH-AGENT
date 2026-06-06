@@ -49,14 +49,14 @@ function NewsInsights({ articles }) {
   return (
     <div className="quantum-card mb-6 fade-in-up" style={{ animationDelay: "0.45s" }}>
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-[#1e1e4a]/60 pb-3 mb-4">
+      <div className="flex items-center justify-between border-b border-white/5 pb-3 mb-4">
         <div>
           <span className="text-slate-500 text-xs font-semibold uppercase tracking-wider">Real-Time Streams</span>
           <h3 className="text-white font-bold text-sm mt-0.5 flex items-center gap-2">
             <span>📰</span> Harvested News Insights
           </h3>
         </div>
-        <span className="px-2 py-0.5 rounded bg-purple-900/20 border border-purple-500/20 text-purple-400 text-[10px] font-mono font-bold">
+        <span className="px-2 py-0.5 rounded bg-blue-950/20 border border-blue-500/20 text-blue-400 text-[10px] font-mono font-bold">
           {articles.length} Feeds Harvester
         </span>
       </div>
@@ -72,7 +72,7 @@ function NewsInsights({ articles }) {
           return (
             <div 
               key={idx} 
-              className="flex flex-col gap-3 p-4 bg-[#0a0a1a]/65 rounded-xl border border-[#1e1e4a]/45 hover:border-purple-500/35 transition-all duration-200"
+              className="flex flex-col gap-3 p-4 bg-[#0b1020]/45 rounded-xl border border-white/5 hover:border-blue-500/35 transition-all duration-200"
             >
               {/* Title & Impact */}
               <div className="flex justify-between items-start gap-3">
@@ -80,7 +80,7 @@ function NewsInsights({ articles }) {
                   href={article.link} 
                   target="_blank" 
                   rel="noopener noreferrer" 
-                  className="text-white text-xs font-bold hover:text-purple-400 transition-colors leading-relaxed line-clamp-2"
+                  className="text-white text-xs font-bold hover:text-blue-400 transition-colors leading-relaxed line-clamp-2"
                 >
                   {article.title}
                 </a>
@@ -93,14 +93,14 @@ function NewsInsights({ articles }) {
               </div>
 
               {/* AI Summary Section */}
-              <div className="bg-[#050510]/50 p-2.5 rounded-lg border border-white/5 text-[10px] leading-relaxed text-slate-400 font-light">
-                <span className="text-[9px] font-bold text-purple-400 block mb-0.5 font-mono">🧠 Sentiment Highlight Summary</span>
+              <div className="bg-[#060816]/60 p-2.5 rounded-lg border border-white/5 text-[10px] leading-relaxed text-slate-400 font-light">
+                <span className="text-[9px] font-bold text-blue-400 block mb-0.5 font-mono">🧠 Sentiment Highlight Summary</span>
                 {aiSummary}
               </div>
 
               {/* Meta tags */}
-              <div className="flex flex-wrap items-center gap-2 mt-auto pt-2 border-t border-[#1e1e4a]/20 text-[9px] font-medium text-slate-500">
-                <span className="bg-[#101030] px-1.5 py-0.5 rounded border border-[#202050] text-slate-400">
+              <div className="flex flex-wrap items-center gap-2 mt-auto pt-2 border-t border-white/5 text-[9px] font-medium text-slate-500">
+                <span className="bg-[#0b1020] px-1.5 py-0.5 rounded border border-white/5 text-slate-400">
                   {article.source}
                 </span>
                 <span>•</span>
