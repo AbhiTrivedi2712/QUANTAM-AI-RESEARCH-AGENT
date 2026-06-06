@@ -2,6 +2,7 @@
 // Shows 4 key indicators at a glance: Current Price, Market Bias, Confidence, Risk Level.
 
 import React from "react";
+import { DollarSign, TrendingUp, TrendingDown, Activity, Shield, AlertTriangle, Zap, Target } from "lucide-react";
 
 function KpiCards({ data }) {
   // Extract values from the API response
@@ -14,16 +15,16 @@ function KpiCards({ data }) {
   // Recommendations / Bias styling
   function getBiasStyle(bias) {
     const b = bias ? bias.toLowerCase() : "";
-    if (b === "bullish") return { text: "text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-500/20", icon: "📈" };
-    if (b === "bearish") return { text: "text-red-400", bg: "bg-red-500/10", border: "border-red-500/20", icon: "📉" };
-    return { text: "text-amber-400", bg: "bg-amber-500/10", border: "border-amber-500/20", icon: "↔️" };
+    if (b === "bullish") return { text: "text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-500/20", icon: TrendingUp };
+    if (b === "bearish") return { text: "text-red-400", bg: "bg-red-500/10", border: "border-red-500/20", icon: TrendingDown };
+    return { text: "text-amber-400", bg: "bg-amber-500/10", border: "border-amber-500/20", icon: Activity };
   }
 
   function getRiskStyle(r) {
     const rL = r ? r.toLowerCase() : "";
-    if (rL === "low") return { text: "text-emerald-400", icon: "🛡️" };
-    if (rL === "high") return { text: "text-red-400", icon: "⚠️" };
-    return { text: "text-amber-400", icon: "⚡" };
+    if (rL === "low") return { text: "text-emerald-400", icon: Shield };
+    if (rL === "high") return { text: "text-red-400", icon: AlertTriangle };
+    return { text: "text-amber-400", icon: Zap };
   }
 
   const biasStyle = getBiasStyle(market_bias);
@@ -36,7 +37,8 @@ function KpiCards({ data }) {
     {
       label: "Current Price",
       value: `${currencySymbol}${price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
-      icon: isUp ? "💵" : "💵",
+      icon: DollarSign,
+      iconColor: isUp ? "text-emerald-400" : "text-red-400",
       valueClass: "text-white",
       subtext: `${isUp ? "▲" : "▼"} ${isUp ? "+" : ""}${changePct.toFixed(2)}% today`,
       subtextClass: isUp ? "text-emerald-400" : "text-red-400",
@@ -45,6 +47,7 @@ function KpiCards({ data }) {
       label: "Market Bias",
       value: market_bias || "Neutral",
       icon: biasStyle.icon,
+      iconColor: biasStyle.text,
       valueClass: biasStyle.text,
       subtext: "Aggregated agent posture",
       subtextClass: "text-slate-500",
@@ -52,7 +55,8 @@ function KpiCards({ data }) {
     {
       label: "Consensus Confidence",
       value: `${confidence || 50}%`,
-      icon: "🎯",
+      icon: Target,
+      iconColor: confidence >= 75 ? "text-emerald-400" : confidence >= 55 ? "text-amber-400" : "text-red-400",
       valueClass: confidence >= 75 ? "text-emerald-400" : confidence >= 55 ? "text-amber-400" : "text-red-400",
       subtext: "Weighted average consensus",
       subtextClass: "text-slate-500",
@@ -61,6 +65,7 @@ function KpiCards({ data }) {
       label: "Divergence Risk",
       value: risk || "Medium",
       icon: riskStyle.icon,
+      iconColor: riskStyle.text,
       valueClass: riskStyle.text,
       subtext: "Signal contradiction level",
       subtextClass: "text-slate-500",
@@ -78,7 +83,7 @@ function KpiCards({ data }) {
           {/* Header */}
           <div className="flex items-center justify-between mb-3">
             <p className="text-slate-400 text-xs font-semibold uppercase tracking-wider">{card.label}</p>
-            <span className="text-xl">{card.icon}</span>
+            {React.createElement(card.icon, { className: `w-5 h-5 ${card.iconColor || "text-slate-400"}` })}
           </div>
 
           {/* Value */}

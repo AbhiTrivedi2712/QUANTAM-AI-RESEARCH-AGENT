@@ -2,6 +2,7 @@
 // The user types a ticker (AAPL, TSLA, etc.) and clicks Analyze.
 
 import React, { useState } from "react";
+import { Search, ArrowRight } from "lucide-react";
 
 // Common stock symbols shown as quick-select chips
 const QUICK_SYMBOLS = ["AAPL", "TSLA", "INFY", "TCS", "GOOGL", "MSFT"];
@@ -31,9 +32,9 @@ function SearchBar({ onSearch, isLoading }) {
       <form onSubmit={handleSubmit} className="flex gap-3">
         <div className="flex-1 relative">
           {/* Search Icon */}
-          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-lg">
-            🔍
-          </span>
+          <div className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center justify-center pointer-events-none">
+            <Search size={16} className="text-slate-500" />
+          </div>
           <input
             type="text"
             value={inputValue}
@@ -57,7 +58,9 @@ function SearchBar({ onSearch, isLoading }) {
               Analyzing...
             </span>
           ) : (
-            "Analyze →"
+            <span className="flex items-center justify-center gap-1.5">
+              Analyze <ArrowRight size={14} />
+            </span>
           )}
         </button>
       </form>

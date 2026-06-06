@@ -1,4 +1,5 @@
 import React from "react";
+import { Shield } from "lucide-react";
 
 function SystemStatusCard({ systemStatus }) {
   if (!systemStatus) return null;
@@ -40,7 +41,7 @@ function SystemStatusCard({ systemStatus }) {
         <div>
           <span className="text-slate-500 text-[10px] font-semibold uppercase tracking-wider">Gateway Telemetry</span>
           <h3 className="text-white font-bold text-sm mt-0.5 flex items-center gap-1.5">
-            <span>🛡️</span> System Infrastructure Status
+            <Shield size={16} className="text-blue-400" /> System Infrastructure Status
           </h3>
         </div>
         <div className="text-right">

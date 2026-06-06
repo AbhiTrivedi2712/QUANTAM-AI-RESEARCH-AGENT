@@ -1,5 +1,5 @@
 import React from "react";
-import { X, TrendingUp, Award, Activity, Landmark, Shield, AlertTriangle, Percent, CheckCircle2, XCircle, MessageSquare } from "lucide-react";
+import { X, TrendingUp, Award, Activity, Landmark, Shield, AlertTriangle, Percent, CheckCircle2, XCircle, MessageSquare, Newspaper, Zap, Clock, Cpu, Brain, BarChart3 as BarChartIcon } from "lucide-react";
 import {
   ResponsiveContainer,
   AreaChart,
@@ -34,6 +34,9 @@ export default function AgentModal({ isOpen, onClose, type, details, stockInfoDa
   const stock = stockInfoData?.stock || {};
   const timeframes = stockInfoData?.timeframes || {};
 
+  const isIndian = stock.symbol && (stock.symbol.endsWith(".NS") || stock.symbol.endsWith(".BO") || stock.symbol.endsWith(".ns") || stock.symbol.endsWith(".bo"));
+  const currencySymbol = isIndian ? "₹" : "$";
+
   // Color palette for professional charts
   const COLORS = {
     bullish: "#10b981", // Emerald
@@ -56,9 +59,9 @@ export default function AgentModal({ isOpen, onClose, type, details, stockInfoDa
         <div className="flex items-center justify-between border-b border-white/5 bg-[#0b1020]/95 px-6 py-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-lg shadow-inner">
-              {type === "technical" && "📈"}
-              {type === "fundamental" && "🏦"}
-              {type === "sentiment" && "📰"}
+              {type === "technical" && <TrendingUp size={20} className="text-blue-400" />}
+              {type === "fundamental" && <Landmark size={20} className="text-blue-400" />}
+              {type === "sentiment" && <Newspaper size={20} className="text-blue-400" />}
             </div>
             <div>
               <h2 className="font-bold text-white text-base tracking-wide uppercase font-mono">
@@ -107,7 +110,15 @@ export default function AgentModal({ isOpen, onClose, type, details, stockInfoDa
                   ? "bg-amber-500/10 text-amber-400 border-amber-500/20"
                   : "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
               }`}>
-                {details.fallback_active ? "⚠️ Heuristic Fallback" : "⚡ Direct LLM Pipeline"}
+                {details.fallback_active ? (
+                  <span className="flex items-center gap-1">
+                    <AlertTriangle size={12} className="text-amber-400" /> Heuristic Fallback
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-1">
+                    <Zap size={12} className="text-emerald-400" /> Direct LLM Pipeline
+                  </span>
+                )}
               </span>
             </div>
 
@@ -224,7 +235,7 @@ export default function AgentModal({ isOpen, onClose, type, details, stockInfoDa
               {/* Bottom Row: MACD Oscillator & Timeframe grid */}
               <div className="lg:col-span-6 bg-[#0b1020]/50 border border-white/5 rounded-xl p-5 flex flex-col justify-between">
                 <h3 className="text-white font-bold text-xs uppercase tracking-wider font-mono flex items-center gap-1.5 mb-4">
-                  📊 MACD Signal Line & Hist
+                  <BarChartIcon size={14} className="text-blue-400" /> MACD Signal Line & Hist
                 </h3>
                 <div className="h-44">
                   <ResponsiveContainer width="100%" height="100%">
@@ -258,7 +269,7 @@ export default function AgentModal({ isOpen, onClose, type, details, stockInfoDa
               {/* Timeframe Trends grid */}
               <div className="lg:col-span-6 bg-[#0b1020]/50 border border-white/5 rounded-xl p-5 flex flex-col justify-between">
                 <h3 className="text-white font-bold text-xs uppercase tracking-wider font-mono flex items-center gap-1.5 mb-4">
-                  ⏰ Multi-Timeframe Trend Structures
+                  <Clock size={14} className="text-blue-400" /> Multi-Timeframe Trend Structures
                 </h3>
                 <div className="grid grid-cols-5 gap-3 text-center text-xs font-mono">
                   {details.timeframe_analysis && Object.entries(details.timeframe_analysis).map(([tf, trend]) => {
@@ -281,7 +292,7 @@ export default function AgentModal({ isOpen, onClose, type, details, stockInfoDa
               {/* AI Narrative */}
               <div className="lg:col-span-12 bg-[#0b1020]/50 border border-white/5 rounded-xl p-5">
                 <h3 className="text-white font-bold text-xs uppercase tracking-wider font-mono flex items-center gap-1.5 mb-2.5">
-                  🤖 Technical Agent Commentary
+                  <Cpu size={14} className="text-blue-400" /> Technical Agent Commentary
                 </h3>
                 <p className="text-slate-300 text-xs leading-relaxed">{details.summary}</p>
               </div>
@@ -297,7 +308,7 @@ export default function AgentModal({ isOpen, onClose, type, details, stockInfoDa
               {/* Left Column: Health Score Radials */}
               <div className="lg:col-span-4 bg-[#0b1020]/50 border border-white/5 rounded-xl p-5 flex flex-col justify-between">
                 <h3 className="text-white font-bold text-xs uppercase tracking-wider font-mono flex items-center gap-1.5 mb-4">
-                  🛡️ Health & Index breakdowns
+                  <Shield size={14} className="text-emerald-400" /> Health & Index breakdowns
                 </h3>
                 
                 {/* Horizontal Progress Bars representing Index scores */}
@@ -336,7 +347,9 @@ export default function AgentModal({ isOpen, onClose, type, details, stockInfoDa
                 {/* Extracted Strengths & Weaknesses */}
                 <div className="mt-6 border-t border-white/5 pt-4 grid grid-cols-2 gap-4 text-[11px] leading-relaxed">
                   <div>
-                    <p className="text-emerald-400 font-bold mb-1.5 flex items-center gap-1">✔ Strengths</p>
+                    <p className="text-emerald-400 font-bold mb-1.5 flex items-center gap-1.5">
+                      <CheckCircle2 size={12} /> Strengths
+                    </p>
                     <ul className="space-y-1 text-slate-400">
                       {details.strengths && details.strengths.slice(0, 3).map((item, idx) => (
                         <li key={idx} className="list-disc list-inside truncate text-[10px] text-slate-300" title={item}>{item}</li>
@@ -344,7 +357,9 @@ export default function AgentModal({ isOpen, onClose, type, details, stockInfoDa
                     </ul>
                   </div>
                   <div>
-                    <p className="text-red-400 font-bold mb-1.5 flex items-center gap-1">✗ Weaknesses</p>
+                    <p className="text-red-400 font-bold mb-1.5 flex items-center gap-1.5">
+                      <XCircle size={12} /> Weaknesses
+                    </p>
                     <ul className="space-y-1 text-slate-400">
                       {details.weaknesses && details.weaknesses.slice(0, 3).map((item, idx) => (
                         <li key={idx} className="list-disc list-inside truncate text-[10px] text-slate-300" title={item}>{item}</li>
@@ -358,7 +373,7 @@ export default function AgentModal({ isOpen, onClose, type, details, stockInfoDa
               <div className="lg:col-span-8 bg-[#0b1020]/50 border border-white/5 rounded-xl p-5 flex flex-col justify-between">
                 <div className="flex justify-between items-center mb-4">
                   <h3 className="text-white font-bold text-xs uppercase tracking-wider font-mono flex items-center gap-1.5">
-                    📊 Estimated Revenue & Income Growth
+                    <BarChartIcon size={14} className="text-blue-400" /> Estimated Revenue & Income Growth
                   </h3>
                   <span className="text-[9px] text-slate-500 font-mono">Historical Simulation & Target</span>
                 </div>
@@ -399,7 +414,7 @@ export default function AgentModal({ isOpen, onClose, type, details, stockInfoDa
               {/* Ratios & Corporate Data details */}
               <div className="lg:col-span-12 bg-[#0b1020]/50 border border-white/5 rounded-xl p-5">
                 <h3 className="text-white font-bold text-xs uppercase tracking-wider font-mono flex items-center gap-1.5 mb-4">
-                  🏦 Key Solvency & Attractiveness Ratios
+                  <Landmark size={14} className="text-blue-400" /> Key Solvency & Attractiveness Ratios
                 </h3>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs font-mono">
                   <div className="bg-[#060816] rounded-xl border border-white/5 p-4 text-center">
@@ -435,7 +450,7 @@ export default function AgentModal({ isOpen, onClose, type, details, stockInfoDa
               {/* AI Narrative */}
               <div className="lg:col-span-12 bg-[#0b1020]/50 border border-white/5 rounded-xl p-5">
                 <h3 className="text-white font-bold text-xs uppercase tracking-wider font-mono flex items-center gap-1.5 mb-2.5">
-                  🤖 Fundamental Agent Commentary
+                  <Cpu size={14} className="text-blue-400" /> Fundamental Agent Commentary
                 </h3>
                 <p className="text-slate-300 text-xs leading-relaxed">{details.summary}</p>
               </div>
@@ -451,7 +466,7 @@ export default function AgentModal({ isOpen, onClose, type, details, stockInfoDa
               {/* Left Column: News Sentiment Distribution Pie */}
               <div className="lg:col-span-4 bg-[#0b1020]/50 border border-white/5 rounded-xl p-5 flex flex-col justify-between">
                 <h3 className="text-white font-bold text-xs uppercase tracking-wider font-mono flex items-center gap-1.5 mb-4">
-                  📰 Sentiment Distribution Matrix
+                  <Newspaper size={14} className="text-blue-400" /> Sentiment Distribution Matrix
                 </h3>
                 
                 <div className="h-44 w-full flex items-center justify-center relative">
@@ -503,7 +518,7 @@ export default function AgentModal({ isOpen, onClose, type, details, stockInfoDa
               <div className="lg:col-span-8 bg-[#0b1020]/50 border border-white/5 rounded-xl p-5 flex flex-col justify-between">
                 <div className="flex justify-between items-center mb-4">
                   <h3 className="text-white font-bold text-xs uppercase tracking-wider font-mono flex items-center gap-1.5">
-                    📈 Sentiment Swing Feed Timeline
+                    <TrendingUp size={14} className="text-blue-400" /> Sentiment Swing Feed Timeline
                   </h3>
                   <span className="text-[9px] text-slate-500 font-mono">Article-by-Article Sentiment Swing</span>
                 </div>
@@ -562,7 +577,7 @@ export default function AgentModal({ isOpen, onClose, type, details, stockInfoDa
               {/* AI Narrative */}
               <div className="lg:col-span-12 bg-[#0b1020]/50 border border-white/5 rounded-xl p-5">
                 <h3 className="text-white font-bold text-xs uppercase tracking-wider font-mono flex items-center gap-1.5 mb-2.5">
-                  🤖 Sentiment Agent Commentary
+                  <Cpu size={14} className="text-blue-400" /> Sentiment Agent Commentary
                 </h3>
                 <p className="text-slate-300 text-xs leading-relaxed">{details.summary}</p>
               </div>

@@ -2,13 +2,14 @@
 // Includes sentiment tag tags, publisher sources, publication dates, AI summary analysis, and impact scores.
 
 import React from "react";
+import { Newspaper, Brain } from "lucide-react";
 
 function NewsInsights({ articles }) {
   if (!articles || articles.length === 0) {
     return (
       <div className="quantum-card mb-6">
         <h3 className="text-white font-bold text-sm mb-3 flex items-center gap-2">
-          <span>📰</span> Recent News Insights
+          <Newspaper size={16} className="text-blue-400" /> Recent News Insights
         </h3>
         <p className="text-slate-500 text-xs font-light">No recent news headlines available for this symbol.</p>
       </div>
@@ -53,7 +54,7 @@ function NewsInsights({ articles }) {
         <div>
           <span className="text-slate-500 text-xs font-semibold uppercase tracking-wider">Real-Time Streams</span>
           <h3 className="text-white font-bold text-sm mt-0.5 flex items-center gap-2">
-            <span>📰</span> Harvested News Insights
+            <Newspaper size={16} className="text-blue-400" /> Harvested News Insights
           </h3>
         </div>
         <span className="px-2 py-0.5 rounded bg-blue-950/20 border border-blue-500/20 text-blue-400 text-[10px] font-mono font-bold">
@@ -94,7 +95,9 @@ function NewsInsights({ articles }) {
 
               {/* AI Summary Section */}
               <div className="bg-[#060816]/60 p-2.5 rounded-lg border border-white/5 text-[10px] leading-relaxed text-slate-400 font-light">
-                <span className="text-[9px] font-bold text-blue-400 block mb-0.5 font-mono">🧠 Sentiment Highlight Summary</span>
+                <span className="text-[9px] font-bold text-blue-400 flex items-center gap-1 mb-0.5 font-mono">
+                  <Brain size={10} className="text-blue-400" /> Sentiment Highlight Summary
+                </span>
                 {aiSummary}
               </div>
 

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Shield, Rocket, BarChart3, TrendingUp, Landmark, Newspaper, Brain, Radio, Target } from "lucide-react";
 
 function LandingPage({ onStartResearch, onViewArchitecture }) {
   // Counters states
@@ -39,7 +40,7 @@ function LandingPage({ onStartResearch, onViewArchitecture }) {
         {/* Left: Headline & Callouts */}
         <div className="lg:col-span-7 flex flex-col gap-6 text-left">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-semibold tracking-wide w-fit font-mono">
-            <span>🛡️</span> AGENTIFAI PLATFORM DEEP DIVE
+            <Shield size={12} className="text-blue-400" /> AGENTIFAI PLATFORM DEEP DIVE
           </div>
           
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-[1.08] text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
@@ -55,10 +56,10 @@ function LandingPage({ onStartResearch, onViewArchitecture }) {
 
           <div className="flex flex-wrap gap-4 mt-2">
             <button onClick={onStartResearch} className="btn-primary flex items-center gap-2">
-              <span>🚀</span> Start Research
+              <Rocket size={14} /> Start Research
             </button>
             <button onClick={onViewArchitecture} className="btn-secondary flex items-center gap-2">
-              <span>📊</span> View Architecture
+              <BarChart3 size={14} /> View Architecture
             </button>
           </div>
 
@@ -119,24 +120,24 @@ function LandingPage({ onStartResearch, onViewArchitecture }) {
               </div>
 
               {/* Agents status layout */}
-              <div className="border-t border-white/5 pt-3 mt-2 space-y-2.5 text-[11px] font-mono text-slate-400">
+              <div className="border-t border-white/5 pt-3 mt-2 space-y-2.5 text-[11px]">
                 <div className="flex justify-between items-center bg-white/2 p-2 rounded border border-white/5">
-                  <span className="flex items-center gap-1.5">📈 <span className="font-semibold text-white">Technical Node</span></span>
+                  <span className="flex items-center gap-1.5"><TrendingUp size={12} className="text-emerald-400" /> <span className="font-semibold text-white">Technical Node</span></span>
                   <span className="text-emerald-400 font-bold uppercase">Bullish (98%)</span>
                 </div>
                 <div className="flex justify-between items-center bg-white/2 p-2 rounded border border-white/5">
-                  <span className="flex items-center gap-1.5">🏦 <span className="font-semibold text-white">Fundamental Node</span></span>
+                  <span className="flex items-center gap-1.5"><Landmark size={12} className="text-emerald-400" /> <span className="font-semibold text-white">Fundamental Node</span></span>
                   <span className="text-emerald-400 font-bold uppercase">Strong (90%)</span>
                 </div>
                 <div className="flex justify-between items-center bg-white/2 p-2 rounded border border-white/5">
-                  <span className="flex items-center gap-1.5">📰 <span className="font-semibold text-white">Sentiment Node</span></span>
+                  <span className="flex items-center gap-1.5"><Newspaper size={12} className="text-slate-400" /> <span className="font-semibold text-white">Sentiment Node</span></span>
                   <span className="text-slate-400 font-bold uppercase">Neutral (60%)</span>
                 </div>
               </div>
-
+ 
               {/* Narrative highlight */}
               <div className="bg-[#050512] rounded-xl border border-white/5 p-3 text-[10px] leading-relaxed text-slate-400 font-light mt-4">
-                <span className="text-purple-400 font-bold block mb-0.5 font-mono">🧠 Executive Brief</span>
+                <span className="text-purple-400 font-bold flex items-center gap-1 mb-0.5 font-mono"><Brain size={12} /> Executive Brief</span>
                 Consolidated analysis indicates a bullish posture supported by SMA crossover signals and high profit margins, with balanced media sentiment flow.
               </div>
             </div>
@@ -163,23 +164,26 @@ function LandingPage({ onStartResearch, onViewArchitecture }) {
             <div className="hidden md:block absolute top-[28px] left-[8%] right-[8%] h-0.5 bg-slate-800 -z-10" />
 
             {[
-              { num: "01", name: "Market Ingest", icon: "📡", desc: "yfinance stats + Google News RSS feed search" },
-              { num: "02", name: "Technical core", icon: "📈", desc: "Local extrema support/resistance, RSI & MA metrics" },
-              { num: "03", name: "Fundamentals", icon: "🏦", desc: "Balance sheet safety checks and valuation safety scores" },
-              { num: "04", name: "Headline Sentiment", icon: "📰", desc: "Lexicon sentiment ratios and news events filters" },
-              { num: "05", name: "Master consensus", icon: "🧠", desc: "40-35-25 weighted scoring matrix aggregation" },
-              { num: "06", name: "Executive Report", icon: "🎯", desc: "Downside risks, future catalysts, and market brief outputs" },
-            ].map((step, idx) => (
-              <div key={idx} className="flex-1 flex flex-col items-center gap-2 group text-center">
-                {/* Node circle */}
-                <div className="w-14 h-14 rounded-full border border-white/10 bg-slate-950 flex items-center justify-center text-xl font-bold font-mono group-hover:border-blue-500/40 transition-all duration-300 shadow-lg relative">
-                  <span>{step.icon}</span>
-                  <span className="absolute -bottom-1 -right-1 bg-blue-600 text-[8px] px-1 py-0.5 rounded text-white font-mono">{step.num}</span>
+              { num: "01", name: "Market Ingest", icon: Radio, desc: "yfinance stats + Google News RSS feed search" },
+              { num: "02", name: "Technical core", icon: TrendingUp, desc: "Local extrema support/resistance, RSI & MA metrics" },
+              { num: "03", name: "Fundamentals", icon: Landmark, desc: "Balance sheet safety checks and valuation safety scores" },
+              { num: "04", name: "Headline Sentiment", icon: Newspaper, desc: "Lexicon sentiment ratios and news events filters" },
+              { num: "05", name: "Master consensus", icon: Brain, desc: "40-35-25 weighted scoring matrix aggregation" },
+              { num: "06", name: "Executive Report", icon: Target, desc: "Downside risks, future catalysts, and market brief outputs" },
+            ].map((step, idx) => {
+              const StepIcon = step.icon;
+              return (
+                <div key={idx} className="flex-1 flex flex-col items-center gap-2 group text-center">
+                  {/* Node circle */}
+                  <div className="w-14 h-14 rounded-full border border-white/10 bg-slate-950 flex items-center justify-center text-xl font-bold font-mono group-hover:border-blue-500/40 transition-all duration-300 shadow-lg relative">
+                    <StepIcon size={20} className="text-blue-400" />
+                    <span className="absolute -bottom-1 -right-1 bg-blue-600 text-[8px] px-1 py-0.5 rounded text-white font-mono">{step.num}</span>
+                  </div>
+                  <h4 className="text-white text-xs font-bold mt-2">{step.name}</h4>
+                  <p className="text-slate-500 text-[10px] max-w-[130px] font-light leading-normal">{step.desc}</p>
                 </div>
-                <h4 className="text-white text-xs font-bold mt-2">{step.name}</h4>
-                <p className="text-slate-500 text-[10px] max-w-[130px] font-light leading-normal">{step.desc}</p>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>
@@ -196,7 +200,7 @@ function LandingPage({ onStartResearch, onViewArchitecture }) {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
           {/* Feature 1 */}
           <div className="quantum-card flex flex-col gap-3">
-            <span className="text-2xl">📈</span>
+            <TrendingUp size={24} className="text-blue-400" />
             <h3 className="text-white font-bold text-sm tracking-wide">Technical Intelligence</h3>
             <p className="text-slate-400 text-xs font-light leading-relaxed">
               Multi-timeframe trend analysis (15m to 1w) using RSI, MACD, Moving Averages, and rolling local extrema support and resistance bounds.
@@ -205,7 +209,7 @@ function LandingPage({ onStartResearch, onViewArchitecture }) {
 
           {/* Feature 2 */}
           <div className="quantum-card flex flex-col gap-3">
-            <span className="text-2xl">🏦</span>
+            <Landmark size={24} className="text-blue-400" />
             <h3 className="text-white font-bold text-sm tracking-wide">Fundamental Intelligence</h3>
             <p className="text-slate-400 text-xs font-light leading-relaxed">
               Automatic valuation scoring, compound growth index evaluations, solvency reviews, and financial health audits.
@@ -214,7 +218,7 @@ function LandingPage({ onStartResearch, onViewArchitecture }) {
 
           {/* Feature 3 */}
           <div className="quantum-card flex flex-col gap-3">
-            <span className="text-2xl">📰</span>
+            <Newspaper size={24} className="text-blue-400" />
             <h3 className="text-white font-bold text-sm tracking-wide">Sentiment Intelligence</h3>
             <p className="text-slate-400 text-xs font-light leading-relaxed">
               Real-time Google News RSS search crawling with heuristic keyword events and tagged positive/negative sentiment ratio flows.
@@ -223,7 +227,7 @@ function LandingPage({ onStartResearch, onViewArchitecture }) {
 
           {/* Feature 4 */}
           <div className="quantum-card flex flex-col gap-3">
-            <span className="text-2xl">🧠</span>
+            <Brain size={24} className="text-blue-400" />
             <h3 className="text-white font-bold text-sm tracking-wide">Consensus Engine</h3>
             <p className="text-slate-400 text-xs font-light leading-relaxed">
               Aggregates specialized agent outputs using a 40-35-25 weighted average math consensus, mapping risk flags and key catalysts.
@@ -323,14 +327,17 @@ function LandingPage({ onStartResearch, onViewArchitecture }) {
           <div className="flex justify-center my-3 text-slate-600 select-none font-bold">▼</div>
 
           <div className="grid grid-cols-3 gap-3 font-mono text-[10px] text-slate-400 max-w-xl mx-auto">
-            <div className="bg-white/2 p-2.5 rounded border border-white/5">
-              <span>📈 Technical Node</span>
+            <div className="bg-white/2 p-2.5 rounded border border-white/5 flex items-center justify-center gap-1.5">
+              <TrendingUp size={12} className="text-blue-400" />
+              <span>Technical Node</span>
             </div>
-            <div className="bg-white/2 p-2.5 rounded border border-white/5">
-              <span>🏦 Fundamental Node</span>
+            <div className="bg-white/2 p-2.5 rounded border border-white/5 flex items-center justify-center gap-1.5">
+              <Landmark size={12} className="text-blue-400" />
+              <span>Fundamental Node</span>
             </div>
-            <div className="bg-white/2 p-2.5 rounded border border-white/5">
-              <span>📰 Sentiment Node</span>
+            <div className="bg-white/2 p-2.5 rounded border border-white/5 flex items-center justify-center gap-1.5">
+              <Newspaper size={12} className="text-blue-400" />
+              <span>Sentiment Node</span>
             </div>
           </div>
 

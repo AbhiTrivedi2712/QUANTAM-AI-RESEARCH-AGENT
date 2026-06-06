@@ -3,6 +3,7 @@
 // Supports interactive timeframe switching: 15m, 1h, 4h, 1d, 1w
 
 import React, { useState, useEffect, useRef } from "react";
+import { BarChart3 } from "lucide-react";
 
 const TIMEFRAMES = [
   { label: "15m", val: "15" },
@@ -105,7 +106,7 @@ function TradingViewChart({ symbol }) {
       <div className="flex items-center justify-between border-b border-[#1e1e4a] pb-3">
         <div>
           <h3 className="text-white font-semibold text-sm flex items-center gap-2">
-            <span>📊</span> Real-Time Chart
+            <BarChart3 size={16} className="text-blue-400" /> Real-Time Chart
           </h3>
           <p className="text-slate-500 text-xs mt-0.5">Interactive market tracking for {tvSymbol}</p>
         </div>

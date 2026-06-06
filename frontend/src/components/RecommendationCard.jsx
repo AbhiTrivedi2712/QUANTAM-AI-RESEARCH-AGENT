@@ -1,5 +1,5 @@
 import React from "react";
-import { Cpu, ShieldAlert, Award, AlertTriangle, TrendingUp, Info } from "lucide-react";
+import { Cpu, ShieldAlert, Award, AlertTriangle, TrendingUp, TrendingDown, Activity, Info, Zap, Pin } from "lucide-react";
 import { ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 
 export default function RecommendationCard({ finalDecision, symbol, technical, fundamental, sentiment }) {
@@ -23,7 +23,7 @@ export default function RecommendationCard({ finalDecision, symbol, technical, f
       bg: "from-emerald-950/20 to-slate-950/5",
       border: "border-emerald-500/20",
       badge: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
-      icon: "📈",
+      icon: TrendingUp,
       glow: "rgba(16, 185, 129, 0.02)",
       text: "text-emerald-400"
     };
@@ -31,7 +31,7 @@ export default function RecommendationCard({ finalDecision, symbol, technical, f
       bg: "from-red-950/20 to-slate-950/5",
       border: "border-red-500/20",
       badge: "bg-red-500/10 text-red-400 border-red-500/20",
-      icon: "📉",
+      icon: TrendingDown,
       glow: "rgba(239, 68, 68, 0.02)",
       text: "text-red-400"
     };
@@ -39,7 +39,7 @@ export default function RecommendationCard({ finalDecision, symbol, technical, f
       bg: "from-amber-950/20 to-slate-950/5",
       border: "border-amber-500/20",
       badge: "bg-amber-500/10 text-amber-400 border-amber-500/20",
-      icon: "↔️",
+      icon: Activity,
       glow: "rgba(245, 158, 11, 0.02)",
       text: "text-amber-400"
     };
@@ -164,7 +164,7 @@ export default function RecommendationCard({ finalDecision, symbol, technical, f
             {/* Drivers list */}
             <div>
               <h4 className="text-slate-450 text-[9px] font-bold uppercase tracking-wider mb-2 flex items-center gap-1.5 font-mono">
-                <span>⚡</span> Consensus Drivers
+                <Zap size={11} className="text-amber-400" /> Consensus Drivers
               </h4>
               <ul className="space-y-1.5">
                 {key_drivers && key_drivers.slice(0, 2).map((drv, idx) => (
@@ -179,7 +179,7 @@ export default function RecommendationCard({ finalDecision, symbol, technical, f
             {/* Watchlist Factors */}
             <div>
               <h4 className="text-slate-450 text-[9px] font-bold uppercase tracking-wider mb-2 flex items-center gap-1.5 font-mono">
-                <span>📌</span> Watchlist Triggers
+                <Pin size={11} className="text-sky-400" /> Watchlist Triggers
               </h4>
               <ul className="space-y-1.5">
                 {watchlist_factors && watchlist_factors.slice(0, 2).map((fac, idx) => (
