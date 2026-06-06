@@ -2,7 +2,7 @@
 // Incorporates the TradingView widget, multi-agent orchestration timeline, 
 // search history, telemetry timing readouts, fallback alert indicators, and upgraded cards.
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Header from "./components/Header";
 import SearchBar from "./components/SearchBar";
 import KpiCards from "./components/KpiCards";
@@ -13,7 +13,8 @@ import ArchitecturePage from "./components/ArchitecturePage";
 import TradingViewChart from "./components/TradingViewChart";
 import NewsInsights from "./components/NewsInsights";
 import SystemStatusCard from "./components/SystemStatusCard";
-import { analyzeStock, getStockData } from "./api";
+import AgentModal from "./components/AgentModal";
+import { analyzeStock, getStockData, checkBackendHealth } from "./api";
 
 const WORKFLOW_STAGES = [
   { id: 1, label: "Market Data Retrieved" },
@@ -31,6 +32,25 @@ function App() {
   const [error, setError] = useState(null);
   const [analysisData, setAnalysisData] = useState(null);
   const [stockInfoData, setStockInfoData] = useState(null);
+  const [backendHealth, setBackendHealth] = useState({ checked: false, online: null });
+  const [activeModal, setActiveModal] = useState(null);
+
+  // Startup validation check to probe backend server availability
+  useEffect(() => {
+    async function verifyBackendConnection() {
+      try {
+        const data = await checkBackendHealth();
+        if (data && data.status === "ok") {
+          setBackendHealth({ checked: true, online: true });
+        } else {
+          setBackendHealth({ checked: true, online: false });
+        }
+      } catch (err) {
+        setBackendHealth({ checked: true, online: false });
+      }
+    }
+    verifyBackendConnection();
+  }, []);
 
   // Search History State (loaded from LocalStorage)
   const [searchHistory, setSearchHistory] = useState(() => {
@@ -224,6 +244,75 @@ function App() {
             </div>
           )}
 
+          {/* Backend Connection Diagnostics Alert */}
+          {backendHealth.checked && !backendHealth.online && (
+            <div className="quantum-card border-red-500/40 bg-red-950/20 mb-8 fade-in-up shadow-2xl relative overflow-hidden" style={{ boxShadow: "0 0 30px rgba(239, 68, 68, 0.1)" }}>
+              <div className="absolute -right-24 -top-24 w-48 h-48 rounded-full bg-red-500/5 blur-3xl pointer-events-none" />
+              <div className="flex items-start gap-4">
+                <span className="text-3xl filter drop-shadow-[0_0_8px_rgba(239,68,68,0.5)]">🚨</span>
+                <div className="flex-1">
+                  <h3 className="text-red-400 font-bold text-base mb-1.5 uppercase tracking-wide">
+                    FastAPI Backend Gateway Offline
+                  </h3>
+                  <p className="text-slate-300 text-xs leading-relaxed mb-4">
+                    The frontend loaded successfully, but it cannot establish a connection with the FastAPI backend at <code className="px-1.5 py-0.5 rounded bg-black/40 text-rose-300 font-mono text-[11px]">http://localhost:8000</code>.
+                  </p>
+                  
+                  <div className="bg-[#0c0c24]/85 rounded-xl border border-red-500/15 p-4 space-y-3.5">
+                    <p className="text-white text-xs font-bold uppercase tracking-wider border-b border-white/5 pb-1.5 font-mono">
+                      Diagnostics & Troubleshooting Guide
+                    </p>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                      <div>
+                        <p className="text-red-400 font-bold mb-1">1. Server Not Started</p>
+                        <p className="text-slate-400 text-[11px] leading-relaxed">
+                          The backend application is not running. Double-click the root <code className="bg-black/30 px-1 py-0.5 rounded text-[10px]">start_backend.bat</code> file or run <code className="bg-black/30 px-1 py-0.5 rounded text-[10px]">npm run backend-start</code> from the root folder to boot uvicorn.
+                        </p>
+                      </div>
+                      
+                      <div>
+                        <p className="text-red-400 font-bold mb-1">2. Port Conflict / Mismatch</p>
+                        <p className="text-slate-400 text-[11px] leading-relaxed">
+                          FastAPI might be running on a port other than 8000. Verify the startup logs in your backend terminal for the line <code className="text-amber-300">Uvicorn running on http://0.0.0.0:8000</code>.
+                        </p>
+                      </div>
+
+                      <div>
+                        <p className="text-red-400 font-bold mb-1">3. Corrupted Python 3.14 Environment</p>
+                        <p className="text-slate-400 text-[11px] leading-relaxed">
+                          If running manually via <code className="bg-black/30 px-1 py-0.5 rounded text-[10px]">python main.py</code>, your system default Python 3.14 might fail with an <code className="text-rose-300 font-mono">encodings</code> import error. Run using the working Python 3.12 location or the bat file.
+                        </p>
+                      </div>
+
+                      <div>
+                        <p className="text-red-400 font-bold mb-1">4. CORS Policies</p>
+                        <p className="text-slate-400 text-[11px] leading-relaxed">
+                          If your React client is running on a port other than 5173 (e.g. 5174), we've updated the backend settings to support dynamic CORS origins. Ensure you pull the latest backend code.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-4 flex gap-2">
+                    <button 
+                      onClick={() => window.location.reload()} 
+                      className="px-4 py-1.5 rounded-lg bg-red-600 hover:bg-red-500 text-white text-xs font-bold transition-all shadow-md"
+                    >
+                      🔄 Retry Connection
+                    </button>
+                    <button 
+                      onClick={() => setBackendHealth({ checked: true, online: true })} 
+                      className="px-4 py-1.5 rounded-lg border border-slate-700 hover:border-slate-500 text-slate-400 hover:text-white text-xs font-bold transition-all"
+                    >
+                      Bypass Alert
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Error Banner */}
           {error && !isLoading && (
             <div className="quantum-card border-red-500/30 bg-red-950/10 mb-8 fade-in-up">
@@ -294,6 +383,7 @@ function App() {
                   reason={analysisData.technical.reason}
                   details={analysisData.technical}
                   delay={0.05}
+                  onExpand={() => setActiveModal("technical")}
                 />
                 <AgentCard
                   title="Fundamental Analysis Agent"
@@ -303,6 +393,7 @@ function App() {
                   reason={analysisData.fundamental.reason}
                   details={analysisData.fundamental}
                   delay={0.1}
+                  onExpand={() => setActiveModal("fundamental")}
                 />
                 <AgentCard
                   title="Headline Sentiment Agent"
@@ -312,8 +403,24 @@ function App() {
                   reason={analysisData.sentiment.reason}
                   details={analysisData.sentiment}
                   delay={0.15}
+                  onExpand={() => setActiveModal("sentiment")}
                 />
               </div>
+
+              {/* Agent Expandable Terminal Modal */}
+              <AgentModal
+                isOpen={activeModal !== null}
+                onClose={() => setActiveModal(null)}
+                type={activeModal}
+                details={
+                  activeModal === "technical" 
+                    ? analysisData.technical 
+                    : activeModal === "fundamental" 
+                    ? analysisData.fundamental 
+                    : analysisData.sentiment
+                }
+                stockInfoData={stockInfoData}
+              />
 
               {/* SECTION 14: Real-time news stories and AI summarized impacts */}
               {analysisData.sentiment.articles && (

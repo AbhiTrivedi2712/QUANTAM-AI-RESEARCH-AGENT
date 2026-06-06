@@ -9,6 +9,11 @@ echo  ╚═══════════════════════�
 echo.
 
 cd /d "%~dp0frontend"
-npm run dev
+
+echo Verifying and installing frontend dependencies...
+call npm install
+
+echo Starting React dev server...
+call npm run dev
 
 pause

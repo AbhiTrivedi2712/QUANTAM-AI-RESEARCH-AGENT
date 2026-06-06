@@ -85,32 +85,65 @@ For detailed development guidelines, branching protocols, and merging instructio
 
 ---
 
-## ⚡ Quick Start (Local Setup)
+## ⚙️ How To Run Project
 
-### 1. Copy Environment File & Configure
-Copy `.env.example` to `.env` in the root workspace directory:
-```bash
-cp .env.example .env
+### 1. Environment Variables Configuration
+Configure your environmental dependencies by creating a `.env` file in the **root** folder of the repository. (You can copy from `.env.example`).
+```env
+GEMINI_API_KEY=your_gemini_api_key_here
+# Optional: If you want to use the Groq fallback LLM (otherwise, the offline fallback heuristic engine handles analysis)
+GROQ_API_KEY=your_groq_api_key_here
 ```
-*(Optional: Set your `GEMINI_API_KEY` to activate advanced generative news classification.)*
 
-### 2. Boot Backend Server
-```bash
-cd backend
-pip install -r requirements.txt
-python main.py
-```
-* Backend starts at `http://localhost:8000`. 
-* Interactive Swagger Docs are available at `http://localhost:8000/docs`.
+### 2. Backend Startup
+The backend runs on **FastAPI (port 8000)**.
+* **Option A: Quick Start script (Recommended on Windows)**:
+  Simply double-click `start_backend.bat` from the root folder. This script will automatically verify your Python installation, auto-install requirements, and run the FastAPI server.
+* **Option B: Manual Startup via terminal**:
+  ```bash
+  cd backend
+  pip install -r requirements.txt
+  python main.py
+  ```
+* **Verify Backend**:
+  Open `http://localhost:8000/api/health` or view Swagger UI docs at `http://localhost:8000/docs`.
 
-### 3. Launch React Client
-In a new terminal:
-```bash
-cd frontend
-npm install
-npm run dev
-```
-* Access the client dashboard at `http://localhost:5173`.
+### 3. Frontend Startup
+The frontend is a **React/Vite** client.
+* **Option A: Quick Start script (Recommended on Windows)**:
+  Double-click `start_frontend.bat` from the root folder. It will verify/install node dependencies and launch the dev server.
+* **Option B: Manual Startup via terminal**:
+  ```bash
+  cd frontend
+  npm install
+  npm run dev
+  ```
+* **Option C: Unified Startup via root scripts (Requires NPM)**:
+  Since we've added root script proxying, you can run commands directly from the root workspace:
+  ```bash
+  # Install both frontend and backend dependencies
+  npm run install-all
+  
+  # Start the React client (mapped to frontend/):
+  npm run dev
+  ```
+
+### 4. Common Errors & Fixes
+
+#### Error: `npm error enoent Could not read package.json`
+* **Cause**: Running `npm run dev` or `npm install` inside the root workspace folder before we added root-level script maps.
+* **Fix**: Ensure you either run commands in the `frontend` folder (`cd frontend`), use our pre-configured `start_frontend.bat` script, or run the proxies from root using `npm run dev`.
+
+#### Error: `Fatal Python error: Failed to import encodings module` on Python 3.14
+* **Cause**: On some systems, the default system Python (especially Python 3.14) has a corrupted library path or standard library package installation.
+* **Fix**: Use our pre-configured `start_backend.bat` script, which automatically detects this error and falls back to a working Python 3.12 installation at `C:\Users\DELL\AppData\Local\Programs\Python\Python312\python.exe`. If running manually, launch with your explicit Python 3.12 executable path:
+  ```bash
+  "C:\Users\DELL\AppData\Local\Programs\Python\Python312\python.exe" main.py
+  ```
+
+#### Error: `CORS Blocked / Network Error` in Frontend UI
+* **Cause**: The React server dynamically shifted to port `5174` or `5175` because port `5173` was already occupied, but the backend CORS configuration was restricted to `5173`.
+* **Fix**: We updated `backend/main.py`'s CORS middleware to support fallback ports `5174`, `5175`, `5176`, and `3000` for both `localhost` and `127.0.0.1`. Make sure both servers are active.
 
 ---
 

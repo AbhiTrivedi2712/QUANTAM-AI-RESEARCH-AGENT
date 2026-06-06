@@ -37,6 +37,14 @@ export async function checkHealth() {
 }
 
 /**
+ * Perform a root health check (GET /health) to verify connectivity.
+ */
+export async function checkBackendHealth() {
+  const response = await axios.get("http://localhost:8000/health", { timeout: 3000 });
+  return response.data;
+}
+
+/**
  * Get raw stock data and chart data for a symbol.
  */
 export async function getStockData(symbol) {

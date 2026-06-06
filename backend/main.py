@@ -22,12 +22,20 @@ app = FastAPI(
 )
 
 # ── CORS (Cross-Origin Resource Sharing) ──────────────────────────────────────
-# This is REQUIRED so our React frontend (running on port 5173) can talk to
-# our FastAPI backend (running on port 8000).
-# Without this, the browser will block the API calls.
+# This is REQUIRED so our React frontend can talk to our FastAPI backend.
+# We include standard ports and fallbacks (e.g. 5173, 5174, 5175) to prevent CORS issues.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://localhost:3000"],  # React dev server ports
+    allow_origins=[
+        "http://localhost:5173",
+        "http://localhost:5174",
+        "http://localhost:5175",
+        "http://localhost:3000",
+        "http://127.0.0.1:5173",
+        "http://127.0.0.1:5174",
+        "http://127.0.0.1:5175",
+        "http://127.0.0.1:3000",
+    ],
     allow_credentials=True,
     allow_methods=["*"],   # Allow GET, POST, PUT, DELETE, etc.
     allow_headers=["*"],   # Allow all headers
@@ -52,6 +60,12 @@ async def root():
             "stock": "GET /api/stock/{symbol}",
         },
     }
+
+
+@app.get("/health")
+async def root_health():
+    """Service health check endpoint returning status ok."""
+    return {"status": "ok"}
 
 
 # ── Run directly (for development) ────────────────────────────────────────────
