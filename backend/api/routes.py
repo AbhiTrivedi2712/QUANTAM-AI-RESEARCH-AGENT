@@ -9,14 +9,21 @@ from services import stock_service, news_service, cache_service
 import logging
 import os
 from dotenv import load_dotenv
+import time
 
 # Load environment variables from .env
 load_dotenv()
 
+from logging.handlers import RotatingFileHandler
+
 # Setup logging
 logging.basicConfig(
     level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s"
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+    handlers=[
+        logging.StreamHandler(),
+        RotatingFileHandler("quantum_system.log", maxBytes=10*1024*1024, backupCount=5, encoding="utf-8")
+    ]
 )
 logger = logging.getLogger("quantum_agent.api")
 
@@ -29,6 +36,7 @@ async def analyze_stock(request: AnalyzeRequest):
     Takes a ticker symbol, coordinates the data fetching and multi-agent 
     analysis flow, aggregates signals through the Master Agent, and returns the analysis.
     """
+    start_time = time.perf_counter()
     symbol = request.symbol.upper().strip()
     if not symbol:
         raise HTTPException(status_code=400, detail="Stock ticker symbol cannot be empty")
@@ -42,6 +50,22 @@ async def analyze_stock(request: AnalyzeRequest):
         # The cached result might have old schemas or different structure, 
         # so we validate it. If validation succeeds, return it.
         try:
+            cache_info = cache_service.get_cache_info(symbol)
+            fallback_active = (
+                cached_result.get("technical", {}).get("fallback_active", False) or
+                cached_result.get("fundamental", {}).get("fallback_active", False) or
+                cached_result.get("sentiment", {}).get("fallback_active", False) or
+                cached_result.get("final_decision", {}).get("fallback_active", False)
+            )
+            cached_result["system_status"] = {
+                "backend_status": "Online",
+                "groq_status": "Fallback Mode" if fallback_active else ("Online" if os.getenv("GROQ_API_KEY") else "Offline"),
+                "yfinance_status": "Online",
+                "news_status": "Online",
+                "cache_status": "Hit",
+                "cache_ttl_sec": cache_info["ttl_remaining"],
+                "execution_time_sec": round(time.perf_counter() - start_time, 3)
+            }
             return cached_result
         except Exception as cache_err:
             logger.warning(f"Cached schema mismatch for {symbol}. Recalculating. Error: {str(cache_err)}")
@@ -108,15 +132,33 @@ async def analyze_stock(request: AnalyzeRequest):
     # Attach raw articles to sentiment result for frontend News Insights presentation
     sentiment_result["articles"] = news_data.get("articles", [])
 
-    response_data = {
+    fallback_active = (
+        technical_result.get("fallback_active", False) or
+        fundamental_result.get("fallback_active", False) or
+        sentiment_result.get("fallback_active", False) or
+        final_decision.get("fallback_active", False)
+    )
+    exec_time = round(time.perf_counter() - start_time, 3)
 
+    system_status = {
+        "backend_status": "Online",
+        "groq_status": "Fallback Mode" if fallback_active else ("Online" if os.getenv("GROQ_API_KEY") else "Offline"),
+        "yfinance_status": "Online",
+        "news_status": "Online",
+        "cache_status": "Miss",
+        "cache_ttl_sec": 300,
+        "execution_time_sec": exec_time
+    }
+
+    response_data = {
         "stock": resolved_symbol,
         "current_price": stock_data["price"],
         "change_pct": stock_data["change_pct"],
         "technical": technical_result,
         "fundamental": fundamental_result,
         "sentiment": sentiment_result,
-        "final_decision": final_decision
+        "final_decision": final_decision,
+        "system_status": system_status
     }
     
     # Store in cache
@@ -131,11 +173,13 @@ async def health_check():
     GET /health
     Pings backend server status and verifies environment.
     """
-    gemini_loaded = "GEMINI_API_KEY" in os.environ
+    groq_loaded = "GROQ_API_KEY" in os.environ and bool(os.environ["GROQ_API_KEY"].strip())
+    gemini_loaded = "GEMINI_API_KEY" in os.environ and bool(os.environ["GEMINI_API_KEY"].strip())
     return {
         "status": "ok",
         "message": "QUANTUM AGENT Backend is fully operational",
         "environment": {
+            "groq_api_key_configured": groq_loaded,
             "gemini_api_key_configured": gemini_loaded
         }
     }

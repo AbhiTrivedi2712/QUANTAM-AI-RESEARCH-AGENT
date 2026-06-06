@@ -41,19 +41,34 @@ def query_groq(prompt: str, system_prompt: str = None, response_json: bool = Tru
     if response_json:
         payload["response_format"] = {"type": "json_object"}
 
-    # We enforce a strict 10-second timeout to avoid locking up front-end threads
-    with httpx.Client() as client:
-        response = client.post(
-            GROQ_URL, 
-            json=payload, 
-            headers=headers, 
-            timeout=10.0
-        )
-        response.raise_for_status()
-        
-        resp_data = response.json()
-        choices = resp_data.get("choices", [])
-        if not choices:
-            raise ValueError("Groq returned response without choices.")
-            
-        return choices[0]["message"]["content"]
+    # Enforce strict 10-second timeout with retries and exponential backoff
+    max_retries = 2
+    backoff = 1.0
+    last_err = None
+
+    for attempt in range(max_retries + 1):
+        try:
+            with httpx.Client() as client:
+                response = client.post(
+                    GROQ_URL, 
+                    json=payload, 
+                    headers=headers, 
+                    timeout=10.0
+                )
+                response.raise_for_status()
+                
+                resp_data = response.json()
+                choices = resp_data.get("choices", [])
+                if not choices:
+                    raise ValueError("Groq returned response without choices.")
+                    
+                return choices[0]["message"]["content"]
+        except Exception as e:
+            last_err = e
+            logger.warning(f"Groq API connection attempt {attempt + 1} failed: {str(e)}")
+            if attempt < max_retries:
+                import time
+                time.sleep(backoff * (attempt + 1))
+
+    raise last_err
+

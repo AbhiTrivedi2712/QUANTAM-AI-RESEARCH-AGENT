@@ -34,6 +34,7 @@ class TechnicalResult(BaseModel):
     signals: List[str]              # Primary positive/negative indicators
     risk_factors: List[str]          # Technical risk warning indicators
     timeframe_analysis: Dict[str, str] # Multi-timeframe trend mappings (15m, 1h, 4h, 1d, 1w)
+    fallback_active: bool = False   # True if fallback engine was activated
 
 
 class FundamentalResult(BaseModel):
@@ -48,6 +49,7 @@ class FundamentalResult(BaseModel):
     strengths: List[str]            # Primary balance sheet strengths
     weaknesses: List[str]          # Core capital/solvency risks
     metrics: Dict[str, Any]         # Dictionary of raw data metrics
+    fallback_active: bool = False   # True if fallback engine was activated
 
 
 class SentimentResult(BaseModel):
@@ -62,6 +64,7 @@ class SentimentResult(BaseModel):
     negative_ratio: float           # Portion of negative stories (0.0 to 1.0)
     events: List[str]               # Specific corporate/macro events tagged
     articles: List[Dict[str, Any]] = [] # Real news articles fetched
+    fallback_active: bool = False   # True if fallback engine was activated
 
 
 
@@ -73,9 +76,22 @@ class FinalDecision(BaseModel):
     key_drivers: List[str]          # Main drivers derived from sub-agents
     watchlist_factors: List[str]    # Pivotal trigger events to track
     summary: str                    # Executive synthesis commentary
+    potential_risks: List[str] = [] # Specific downside triggers/risks
+    future_catalysts: List[str] = [] # Upcoming upside catalysts/events
+    fallback_active: bool = False   # True if fallback engine was activated
 
 
 # ─── Full Response Schema ─────────────────────────────────────────────────────
+
+class SystemStatus(BaseModel):
+    """System health, connection status, caching indicators, and execution timings"""
+    backend_status: str             # "Online"
+    groq_status: str                # "Online", "Offline", "Fallback Mode"
+    yfinance_status: str            # "Online", "Offline"
+    news_status: str                # "Online", "Offline"
+    cache_status: str               # "Hit" | "Miss"
+    cache_ttl_sec: int              # Remaining TTL in seconds
+    execution_time_sec: float       # High-precision timer timing
 
 class AnalyzeResponse(BaseModel):
     """
@@ -88,3 +104,4 @@ class AnalyzeResponse(BaseModel):
     fundamental: FundamentalResult
     sentiment: SentimentResult
     final_decision: FinalDecision
+    system_status: SystemStatus = None # System performance & fallback statistics

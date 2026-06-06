@@ -48,3 +48,22 @@ def set_in_cache(key: str, data: dict):
 def clear_cache():
     """Remove all cached entries. Useful for testing."""
     _cache.clear()
+
+
+def get_cache_info(key: str) -> dict:
+    """
+    Returns a dict indicating if key is cached, and the remaining TTL.
+    """
+    if key not in _cache:
+        return {"hit": False, "ttl_remaining": 0}
+
+    entry = _cache[key]
+    age = time.time() - entry["timestamp"]
+    ttl_remaining = int(max(0, CACHE_TTL - age))
+
+    if age > CACHE_TTL:
+        # It's expired
+        return {"hit": False, "ttl_remaining": 0}
+
+    return {"hit": True, "ttl_remaining": ttl_remaining}
+

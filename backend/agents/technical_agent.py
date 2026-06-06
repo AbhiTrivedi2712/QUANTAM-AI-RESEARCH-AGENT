@@ -190,7 +190,8 @@ Return ONLY the raw JSON. Do not write markdown tags or backticks (no ```json).
                 "volatility": volatility,
                 "signals": llm_res.get("signals", rule_signals),
                 "risk_factors": llm_res.get("risk_factors", rule_risk_factors),
-                "timeframe_analysis": timeframe_trends
+                "timeframe_analysis": timeframe_trends,
+                "fallback_active": False
             }
             
         except Exception as e:
@@ -213,5 +214,6 @@ Return ONLY the raw JSON. Do not write markdown tags or backticks (no ```json).
         "volatility": volatility,
         "signals": rule_signals,
         "risk_factors": rule_risk_factors,
-        "timeframe_analysis": timeframe_trends
+        "timeframe_analysis": timeframe_trends,
+        "fallback_active": True
     }

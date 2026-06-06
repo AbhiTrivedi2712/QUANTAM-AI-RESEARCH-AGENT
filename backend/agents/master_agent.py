@@ -87,6 +87,29 @@ def analyze(technical: dict, fundamental: dict, sentiment: dict) -> dict:
     rule_watchlist = [
         f"Monitor Support boundary at ${technical.get('support_level', 0.0):.2f} and Resistance ceiling at ${technical.get('resistance_level', 0.0):.2f}."
     ]
+
+    distance_to_support = technical.get("distance_to_support", 5.0)
+    distance_to_resistance = technical.get("distance_to_resistance", 5.0)
+    
+    rule_risks = []
+    if volatility >= 35.0:
+        rule_risks.append(f"High asset volatility ({volatility:.1f}%) creates structural correction risks.")
+    if distance_to_resistance < 3.0:
+        rule_risks.append(f"Approaching key overhead resistance ceiling at ${technical.get('resistance_level', 0.0):.2f}.")
+    if technical.get("trend_strength") == "Weak":
+        rule_risks.append("Weak technical trend direction increases market exposure risk.")
+    if sentiment.get("sentiment") == "Negative":
+        rule_risks.append("Bearish public news sentiment could depress buying interest.")
+    if not rule_risks:
+        rule_risks = ["Macroeconomic headwinds or regulatory risk changes in this sector."]
+
+    rule_catalysts = []
+    if distance_to_support < 3.0:
+        rule_catalysts.append(f"Approaching historical support level at ${technical.get('support_level', 0.0):.2f} could trigger buying support.")
+    if fundamental.get("growth_score", 50) >= 75:
+        rule_catalysts.append("Strong YoY company revenue expansion acts as an ongoing upward valuation catalyst.")
+    if not rule_catalysts:
+        rule_catalysts = ["Upcoming corporate earnings release or sector product announcements."]
     
     calculated_summary = (
         f"Orchestrated analysis indicates a **{calculated_bias}** market bias with "
@@ -154,6 +177,8 @@ Return ONLY a valid JSON object matching this structure:
   "risk": "{calculated_risk}" (keep this exact value),
   "key_drivers": ["list of primary consensus drivers across technicals, fundamentals, and news"],
   "watchlist_factors": ["list of target watchlist triggers, price levels, or catalysts to monitor"],
+  "potential_risks": ["list of structural risks or downside catalysts specific to this analysis"],
+  "future_catalysts": ["list of upside drivers or catalyst events to monitor"],
   "summary": "comprehensive executive synthesis narrative integrating all agents (2 paragraphs)"
 }}
 
@@ -168,7 +193,10 @@ Return ONLY the raw JSON. Do not write markdown tags or backticks (no ```json).
                 "risk": llm_res.get("risk", calculated_risk),
                 "key_drivers": llm_res.get("key_drivers", rule_drivers),
                 "watchlist_factors": llm_res.get("watchlist_factors", rule_watchlist),
-                "summary": llm_res.get("summary", calculated_summary)
+                "potential_risks": llm_res.get("potential_risks", rule_risks),
+                "future_catalysts": llm_res.get("future_catalysts", rule_catalysts),
+                "summary": llm_res.get("summary", calculated_summary),
+                "fallback_active": False
             }
             
         except Exception as e:
@@ -182,5 +210,8 @@ Return ONLY the raw JSON. Do not write markdown tags or backticks (no ```json).
         "risk": calculated_risk,
         "key_drivers": rule_drivers,
         "watchlist_factors": rule_watchlist,
-        "summary": calculated_summary
+        "potential_risks": rule_risks,
+        "future_catalysts": rule_catalysts,
+        "summary": calculated_summary,
+        "fallback_active": True
     }

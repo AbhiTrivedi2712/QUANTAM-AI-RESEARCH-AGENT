@@ -128,7 +128,8 @@ Return ONLY the raw JSON. Do not write markdown tags or backticks (no ```json).
                 "negative_drivers": llm_res.get("negative_drivers", rule_neg_drivers),
                 "positive_ratio": round(pos_ratio, 2),
                 "negative_ratio": round(neg_ratio, 2),
-                "events": llm_res.get("events", list(extracted_events))
+                "events": llm_res.get("events", list(extracted_events)),
+                "fallback_active": False
             }
             
         except Exception as e:
@@ -145,5 +146,6 @@ Return ONLY the raw JSON. Do not write markdown tags or backticks (no ```json).
         "negative_drivers": rule_neg_drivers[:3],
         "positive_ratio": round(pos_ratio, 2),
         "negative_ratio": round(neg_ratio, 2),
-        "events": list(extracted_events)
+        "events": list(extracted_events),
+        "fallback_active": True
     }

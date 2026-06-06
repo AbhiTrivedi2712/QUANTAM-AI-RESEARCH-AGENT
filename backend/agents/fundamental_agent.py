@@ -191,7 +191,8 @@ Return ONLY the raw JSON. Do not write markdown tags or backticks (no ```json).
                 "growth_score": gro,
                 "strengths": llm_res.get("strengths", rule_strengths),
                 "weaknesses": llm_res.get("weaknesses", rule_weaknesses),
-                "metrics": raw_metrics
+                "metrics": raw_metrics,
+                "fallback_active": False
             }
             
         except Exception as e:
@@ -209,5 +210,6 @@ Return ONLY the raw JSON. Do not write markdown tags or backticks (no ```json).
         "growth_score": calculated_growth,
         "strengths": rule_strengths,
         "weaknesses": rule_weaknesses,
-        "metrics": raw_metrics
+        "metrics": raw_metrics,
+        "fallback_active": True
     }

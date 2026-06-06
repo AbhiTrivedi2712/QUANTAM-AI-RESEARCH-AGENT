@@ -1,9 +1,12 @@
 // AgentCard.jsx — Displays detailed agent analysis metrics,
 // including multi-timeframe trends, strengths/weaknesses, and drivers.
+// Upgraded to support Section 6: Agent Explainability widgets.
 
-import React from "react";
+import React, { useState } from "react";
 
 function AgentCard({ title, icon, verdict, confidence, reason, details, delay = 0 }) {
+  const [showExplain, setShowExplain] = useState(false);
+
   // Verdict styling
   function getVerdictBadge(v) {
     const l = v ? v.toLowerCase() : "";
@@ -131,7 +134,7 @@ function AgentCard({ title, icon, verdict, confidence, reason, details, delay = 
                 </p>
                 <ul className="list-disc list-inside text-slate-400 leading-normal pl-0.5 space-y-1 text-[9px]">
                   {details.strengths.slice(0, 3).map((str, idx) => (
-                    <li key={idx} className="truncate" title={str}>{str}</li>
+                    <li key={idx} className="truncate text-slate-300" title={str}>{str}</li>
                   ))}
                 </ul>
               </div>
@@ -141,7 +144,7 @@ function AgentCard({ title, icon, verdict, confidence, reason, details, delay = 
                 </p>
                 <ul className="list-disc list-inside text-slate-400 leading-normal pl-0.5 space-y-1 text-[9px]">
                   {details.weaknesses.slice(0, 3).map((weak, idx) => (
-                    <li key={idx} className="truncate" title={weak}>{weak}</li>
+                    <li key={idx} className="truncate text-slate-300" title={weak}>{weak}</li>
                   ))}
                 </ul>
               </div>
@@ -178,7 +181,7 @@ function AgentCard({ title, icon, verdict, confidence, reason, details, delay = 
                 </p>
                 <ul className="list-disc list-inside text-slate-400 leading-normal pl-0.5 space-y-1 text-[9px]">
                   {details.positive_drivers.slice(0, 3).map((drv, idx) => (
-                    <li key={idx} className="truncate" title={drv}>{drv}</li>
+                    <li key={idx} className="truncate text-slate-300" title={drv}>{drv}</li>
                   ))}
                 </ul>
               </div>
@@ -188,7 +191,7 @@ function AgentCard({ title, icon, verdict, confidence, reason, details, delay = 
                 </p>
                 <ul className="list-disc list-inside text-slate-400 leading-normal pl-0.5 space-y-1 text-[9px]">
                   {details.negative_drivers.slice(0, 3).map((drv, idx) => (
-                    <li key={idx} className="truncate" title={drv}>{drv}</li>
+                    <li key={idx} className="truncate text-slate-300" title={drv}>{drv}</li>
                   ))}
                 </ul>
               </div>
@@ -200,14 +203,50 @@ function AgentCard({ title, icon, verdict, confidence, reason, details, delay = 
       {/* ── Agent Explanation Summary ── */}
       <div className="bg-[#0a0a1a] rounded-xl p-3 border border-[#1e1e4a] text-xs flex-1">
         <p className="text-slate-500 font-semibold mb-1">Agent Commentary</p>
-        <p className="text-slate-350 leading-relaxed font-light text-[11px]">
+        <p className="text-slate-300 leading-relaxed font-light text-[11px]">
           {reason || details?.summary}
         </p>
       </div>
 
-      {/* ── Key Signals or Metric Highlights bottom tags ── */}
+      {/* ── SECTION 6: Toggleable Explainability Accoridion ── */}
+      <div className="border-t border-[#1e1e4a]/40 pt-2.5">
+        <button
+          onClick={() => setShowExplain(!showExplain)}
+          className="text-xs font-bold text-purple-400 hover:text-purple-300 transition-colors flex items-center gap-1"
+        >
+          <span>🎓</span> {showExplain ? "Hide Methodology" : "Explain Methodology"}
+        </button>
+
+        {showExplain && (
+          <div className="mt-2.5 p-3 rounded-lg border border-[#1e1e4a]/60 bg-[#060614] text-[10px] leading-relaxed text-slate-400 space-y-2 fade-in-up">
+            {isTech && (
+              <>
+                <p><strong>SMA channels (50/200 MA)</strong>: Compares short-term and long-term moving averages to determine structural trend direction. A crossover establishes bullish/bearish conviction.</p>
+                <p><strong>RSI Momentum (14)</strong>: Assesses speed and price changes to isolate overbought (≥70) or oversold (≤30) conditions.</p>
+                <p><strong>MACD Oscillator</strong>: Signals changes in trend strength, direction, momentum, and duration of asset trends.</p>
+                <p><strong>Support & Resistance (20-Period)</strong>: Rolled daily local extrema showing buyers/sellers thresholds and distance safety margins.</p>
+              </>
+            )}
+            {isFund && (
+              <>
+                <p><strong>Financial Health Score</strong>: Weighted analysis of balance sheet solvency metrics, profitability indexes, and size buffer scales.</p>
+                <p><strong>Valuation Safety Score</strong>: Compares the Trailing P/E multiplier against index parameters to identify premium ratios or value zones.</p>
+                <p><strong>Compound Growth Score</strong>: Evaluates YoY top-line revenue expansions and bottom-line EPS trajectories for fundamental momentum.</p>
+              </>
+            )}
+            {isSent && (
+              <>
+                <p><strong>Consensus Matrix</strong>: Evaluates volume flow of positive vs negative headlines to quantify market fear/greed bias.</p>
+                <p><strong>Driver Keyword Parsing</strong>: Parses news keywords mapping corporate triggers like regulatory reviews, earnings beats, or product rollouts.</p>
+              </>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* ── Highlight Tags bottom tags ── */}
       {isTech && details?.signals && details.signals.length > 0 && (
-        <div className="flex flex-wrap gap-1 mt-1 border-t border-[#1e1e4a]/40 pt-2">
+        <div className="flex flex-wrap gap-1 mt-1">
           {details.signals.slice(0, 3).map((sig, i) => (
             <span key={i} className="px-2 py-0.5 bg-purple-900/20 border border-purple-500/10 text-purple-400 text-[9px] rounded">
               ⚡ {sig}
@@ -217,7 +256,7 @@ function AgentCard({ title, icon, verdict, confidence, reason, details, delay = 
       )}
 
       {isFund && details?.metrics && (
-        <div className="flex flex-wrap gap-1.5 mt-1 border-t border-[#1e1e4a]/40 pt-2 text-[9px]">
+        <div className="flex flex-wrap gap-1.5 mt-1 text-[9px]">
           {details.metrics.pe_ratio !== null && (
             <span className="px-2 py-0.5 bg-indigo-900/20 border border-indigo-500/10 text-indigo-400 rounded">
               PE: {details.metrics.pe_ratio}x
@@ -233,7 +272,7 @@ function AgentCard({ title, icon, verdict, confidence, reason, details, delay = 
       )}
 
       {isSent && details?.events && details.events.length > 0 && (
-        <div className="flex flex-wrap gap-1 mt-1 border-t border-[#1e1e4a]/40 pt-2">
+        <div className="flex flex-wrap gap-1 mt-1">
           {details.events.slice(0, 3).map((evt, i) => (
             <span key={i} className="px-2 py-0.5 bg-cyan-900/20 border border-cyan-500/10 text-cyan-400 text-[9px] rounded">
               📌 {evt}

@@ -1,6 +1,6 @@
 // ArchitecturePage.jsx — Shows the agent workflow diagram
 // This is a pure CSS/SVG architecture visualization — no external libraries needed.
-// Users can understand how data flows through the system.
+// Upgraded to support Section 15: Cache checking and ingestion flows.
 
 import React from "react";
 
@@ -9,23 +9,31 @@ const NODES = [
   {
     id: "input",
     label: "User Input",
-    sublabel: "Stock Symbol",
+    sublabel: "Stock Ticker (AAPL, INFY)",
     icon: "👤",
     color: "from-slate-700 to-slate-800",
     border: "border-slate-500/40",
   },
   {
-    id: "data",
-    label: "Market Data",
-    sublabel: "Price + News",
-    icon: "📊",
+    id: "cache",
+    label: "Cache Layer",
+    sublabel: "In-Memory TTL Audit",
+    icon: "💾",
     color: "from-blue-900 to-blue-950",
     border: "border-blue-500/40",
   },
   {
+    id: "data",
+    label: "Market Data Ingestion",
+    sublabel: "yfinance & Google News RSS",
+    icon: "📡",
+    color: "from-indigo-900 to-indigo-950",
+    border: "border-indigo-500/40",
+  },
+  {
     id: "technical",
     label: "Technical Agent",
-    sublabel: "RSI · MACD · MA",
+    sublabel: "S/R Levels · Volatility · RSI",
     icon: "📈",
     color: "from-purple-900 to-purple-950",
     border: "border-purple-500/40",
@@ -33,7 +41,7 @@ const NODES = [
   {
     id: "fundamental",
     label: "Fundamental Agent",
-    sublabel: "PE · Revenue · EPS",
+    sublabel: "P/E safety · Health · Growth",
     icon: "🏦",
     color: "from-indigo-900 to-indigo-950",
     border: "border-indigo-500/40",
@@ -41,36 +49,37 @@ const NODES = [
   {
     id: "sentiment",
     label: "Sentiment Agent",
-    sublabel: "News · Headlines",
+    sublabel: "Google RSS news · Lexicons",
     icon: "📰",
     color: "from-cyan-900 to-cyan-950",
     border: "border-cyan-500/40",
   },
   {
     id: "master",
-    label: "Master Agent",
-    sublabel: "Signal Aggregator",
+    label: "Master Orchestrator",
+    sublabel: "Weighted Consensus synthesis",
     icon: "🧠",
     color: "from-violet-900 to-violet-950",
     border: "border-violet-500/40",
   },
   {
     id: "output",
-    label: "Final Decision",
-    sublabel: "BUY / HOLD / SELL",
-    icon: "🎯",
+    label: "Consensus Dashboard UI",
+    sublabel: "Consolidated Intelligence",
+    icon: "📊",
     color: "from-emerald-900 to-emerald-950",
     border: "border-emerald-500/40",
   },
 ];
 
 // Arrow component — simple SVG down arrow
-function Arrow() {
+function Arrow({ label = "" }) {
   return (
     <div className="flex justify-center my-1">
       <div className="flex flex-col items-center text-purple-500/60">
-        <div className="w-px h-4 bg-gradient-to-b from-purple-500/60 to-purple-500/20" />
-        <span className="text-xs">▼</span>
+        {label && <span className="text-[9px] text-slate-500 font-mono tracking-tight mb-1">{label}</span>}
+        <div className="w-px h-5 bg-gradient-to-b from-purple-500/60 to-purple-500/20" />
+        <span className="text-[10px]">▼</span>
       </div>
     </div>
   );
@@ -81,16 +90,16 @@ function Node({ node, delay = 0 }) {
   return (
     <div
       className={`rounded-xl border ${node.border} bg-gradient-to-br ${node.color}
-                  px-5 py-3 flex items-center gap-3 node-float`}
+                  px-5 py-3 flex items-center gap-3 node-float shadow-lg`}
       style={{
         animationDelay: `${delay}s`,
         boxShadow: "0 0 20px rgba(124, 58, 237, 0.1)",
       }}
     >
       <span className="text-2xl">{node.icon}</span>
-      <div>
+      <div className="text-left">
         <p className="text-white font-semibold text-sm">{node.label}</p>
-        <p className="text-slate-400 text-xs">{node.sublabel}</p>
+        <p className="text-slate-400 text-xs font-light">{node.sublabel}</p>
       </div>
     </div>
   );
@@ -101,10 +110,10 @@ function ArchitecturePage() {
     <div className="max-w-7xl mx-auto px-6 py-8">
       {/* ── Page Header ────────────────────────────────────────────────────── */}
       <div className="mb-10 text-center">
-        <h2 className="text-3xl font-bold gradient-text mb-2">System Architecture</h2>
+        <h2 className="text-3xl font-bold gradient-text mb-2">System Architecture & Orchestration</h2>
         <p className="text-slate-400 text-sm max-w-xl mx-auto">
-          QUANTUM AGENT uses a multi-agent pipeline where specialized AI agents analyze
-          different aspects of a stock and a Master Agent combines their signals.
+          QUANTUM operates as a multi-agent consensus network. User queries are routed via 
+          an in-memory caching system to parallel analytical nodes before synthesis.
         </p>
       </div>
 
@@ -113,7 +122,7 @@ function ArchitecturePage() {
         {/* ── Left: Flow Diagram ──────────────────────────────────────────── */}
         <div className="quantum-card">
           <h3 className="text-white font-semibold mb-6 flex items-center gap-2">
-            <span>🔄</span> Agent Pipeline Flow
+            <span>🔄</span> Orchestrated System Data Flow
           </h3>
 
           {/* Vertical flow diagram */}
@@ -122,36 +131,47 @@ function ArchitecturePage() {
             <Node node={NODES[0]} delay={0} />
             <Arrow />
 
-            {/* Step 2: Market Data */}
-            <Node node={NODES[1]} delay={0.1} />
+            {/* Step 2: Cache Layer */}
+            <Node node={NODES[1]} delay={0.08} />
+            
+            {/* Split showing cache logic */}
+            <div className="flex justify-between items-center px-4 py-1 text-[9px] font-mono text-purple-400">
+              <span>[Cache Hit] ➔ Bypass to UI</span>
+              <span>[Cache Miss] ➔ Ingest</span>
+            </div>
+
+            <Arrow label="Fetch Fresh Data" />
+
+            {/* Step 3: Market Data Ingestion */}
+            <Node node={NODES[2]} delay={0.16} />
             <Arrow />
 
-            {/* Step 3: Three agents in a row — shown as a split */}
+            {/* Step 4: Three agents in a row — shown as a split */}
             <div className="text-center mb-1">
-              <p className="text-slate-500 text-xs">Parallel analysis</p>
+              <p className="text-slate-500 text-[10px] uppercase font-bold tracking-wider font-mono">Parallel Agent Evaluation</p>
             </div>
             <div className="grid grid-cols-3 gap-2 mb-1">
-              {NODES.slice(2, 5).map((node, i) => (
+              {NODES.slice(3, 6).map((node, i) => (
                 <div
                   key={node.id}
                   className={`rounded-xl border ${node.border} bg-gradient-to-br ${node.color}
-                               px-2 py-2 text-center node-float`}
-                  style={{ animationDelay: `${0.2 + i * 0.1}s` }}
+                               px-2 py-2.5 text-center node-float shadow-md`}
+                  style={{ animationDelay: `${0.24 + i * 0.08}s` }}
                 >
                   <span className="text-xl block">{node.icon}</span>
                   <p className="text-white text-xs font-semibold leading-tight mt-1">{node.label.split(" ")[0]}</p>
-                  <p className="text-slate-500 text-xs">{node.sublabel.split(" ")[0]}</p>
+                  <p className="text-slate-500 text-[9px] mt-0.5 font-light leading-tight">{node.sublabel.split(" ")[0]}</p>
                 </div>
               ))}
             </div>
+            <Arrow label="Weighted Consensus Synthesis" />
+
+            {/* Step 5: Master Agent */}
+            <Node node={NODES[6]} delay={0.5} />
             <Arrow />
 
-            {/* Step 4: Master Agent */}
-            <Node node={NODES[5]} delay={0.5} />
-            <Arrow />
-
-            {/* Step 5: Final Decision */}
-            <Node node={NODES[6]} delay={0.6} />
+            {/* Step 6: Final Decision / Dashboard UI */}
+            <Node node={NODES[7]} delay={0.58} />
           </div>
         </div>
 
@@ -159,46 +179,52 @@ function ArchitecturePage() {
         <div className="space-y-4">
           <div className="quantum-card">
             <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
-              <span>🤖</span> Agent Descriptions
+              <span>🤖</span> Orchestrated Node Details
             </h3>
 
             {/* Agent description list */}
             {[
               {
+                icon: "💾",
+                name: "Cache Layer",
+                desc: "Intercepts incoming tickers. If evaluated within the last 5 minutes (300s TTL), instantly serves results to the UI to avoid duplicate network calls.",
+                tech: ["In-Memory Cache", "TTL Check", "Low Latency Bypass"],
+              },
+              {
                 icon: "📈",
                 name: "Technical Agent",
-                desc: "Analyzes price indicators: RSI (momentum), MACD (trend direction), and Moving Averages to determine if the stock is trending bullish or bearish.",
-                tech: ["RSI", "MACD", "MA-50", "MA-200"],
+                desc: "Calculates local extrema price support/resistance levels, measures daily returns volatility, computes 20-period SMA trends cross-checked from 15m to 1w.",
+                tech: ["20d local min/max support/resistance", "Timeframe trends (15m to 1w)", "Standard deviation Volatility"],
               },
               {
                 icon: "🏦",
                 name: "Fundamental Agent",
-                desc: "Evaluates company financial health through PE ratio, revenue growth, and earnings growth to determine if the stock is fundamentally strong.",
-                tech: ["PE Ratio", "Revenue Growth", "EPS Growth"],
+                desc: "Audits corporate metrics such as P/E valuations against bands, YoY revenue/earnings growth averages, and net margin solvency profiles.",
+                tech: ["Valuation multiplier risk", "Health & Growth indexes", "Solvency net margin check"],
               },
               {
                 icon: "📰",
                 name: "Sentiment Agent",
-                desc: "Reads and classifies recent news headlines to gauge market sentiment — whether news coverage is positive, negative, or neutral.",
-                tech: ["News Count", "Sentiment Score", "Source Analysis"],
+                desc: "Crawls recent articles from Google News search RSS feeds, applies heuristic keyword parsing models for events, and tagging positive/negative headline sentiment ratios.",
+                tech: ["Google RSS Ingestion", "Lexicon keyword matching", "Consensus ratio flow"],
               },
               {
                 icon: "🧠",
                 name: "Master Agent",
-                desc: "Aggregates results from all three agents using a weighted scoring system to produce the final BUY / HOLD / SELL recommendation.",
-                tech: ["Signal Aggregation", "Risk Assessment", "Confidence Scoring"],
+                desc: "Executes a 40-35-25 weighted consensus conviction formula, calculates mathematical system risk ratings, and generates executive narratives with potential risks and catalysts.",
+                tech: ["40-35-25 Weighted average math", "Consensus risk calculation", "Downside risks & catalysts summary"],
               },
             ].map((agent) => (
-              <div key={agent.name} className="border-b border-[#1e1e4a] last:border-0 pb-4 last:pb-0 mb-4 last:mb-0">
+              <div key={agent.name} className="border-b border-[#1e1e4a]/60 last:border-0 pb-4 last:pb-0 mb-4 last:mb-0">
                 <div className="flex items-start gap-3">
                   <span className="text-2xl mt-0.5">{agent.icon}</span>
                   <div className="flex-1">
                     <p className="text-white font-semibold text-sm mb-1">{agent.name}</p>
-                    <p className="text-slate-400 text-xs leading-relaxed mb-2">{agent.desc}</p>
+                    <p className="text-slate-400 text-xs leading-relaxed mb-2 font-light">{agent.desc}</p>
                     <div className="flex flex-wrap gap-1">
                       {agent.tech.map((t) => (
                         <span key={t} className="px-2 py-0.5 bg-purple-600/10 border border-purple-500/20
-                                                   text-purple-400 text-xs rounded-md">
+                                                   text-purple-400 text-[10px] rounded-md font-mono">
                           {t}
                         </span>
                       ))}
@@ -212,20 +238,20 @@ function ArchitecturePage() {
           {/* ── Tech Stack Card ─────────────────────────────────────────────── */}
           <div className="quantum-card">
             <h3 className="text-white font-semibold mb-3 flex items-center gap-2">
-              <span>⚙️</span> Tech Stack
+              <span>⚙️</span> Platform Tech Stack
             </h3>
             <div className="grid grid-cols-2 gap-3">
               {[
-                { label: "Frontend", value: "React + Vite", color: "text-cyan-400" },
-                { label: "Styling", value: "Tailwind CSS", color: "text-purple-400" },
-                { label: "Backend", value: "FastAPI (Python)", color: "text-emerald-400" },
-                { label: "Server", value: "Uvicorn", color: "text-amber-400" },
-                { label: "HTTP Client", value: "Axios", color: "text-blue-400" },
-                { label: "AI Ready", value: "OpenRouter API", color: "text-violet-400" },
+                { label: "Frontend Engine", value: "React.js + Vite", color: "text-cyan-400" },
+                { label: "Styling System", value: "Tailwind CSS Layouts", color: "text-purple-400" },
+                { label: "Backend API Framework", value: "FastAPI (Python)", color: "text-emerald-400" },
+                { label: "Server runtime", value: "Uvicorn (Reload Mode)", color: "text-amber-400" },
+                { label: "HTTP Connection Engine", value: "Httpx / Axios Client", color: "text-blue-400" },
+                { label: "AI Gateway Engine", value: "Groq Cloud Completion", color: "text-violet-400" },
               ].map((item) => (
                 <div key={item.label} className="bg-[#0a0a1a] rounded-lg p-3 border border-[#1e1e4a]">
-                  <p className="text-slate-500 text-xs">{item.label}</p>
-                  <p className={`font-semibold text-sm ${item.color}`}>{item.value}</p>
+                  <p className="text-slate-500 text-[10px] uppercase font-bold tracking-wider font-mono">{item.label}</p>
+                  <p className={`font-semibold text-sm ${item.color} mt-0.5`}>{item.value}</p>
                 </div>
               ))}
             </div>
