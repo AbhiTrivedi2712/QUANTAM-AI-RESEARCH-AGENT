@@ -101,12 +101,12 @@ function TradingViewChart({ symbol }) {
   }, [tvSymbol, activeInterval]);
 
   return (
-    <div className="quantum-card w-full mb-6 flex flex-col gap-4">
+    <div className="quantum-card w-full flex flex-col gap-4">
       {/* Chart Header & Timeframe Selector */}
       <div className="flex items-center justify-between border-b border-[#1e1e4a] pb-3">
         <div>
           <h3 className="text-white font-semibold text-sm flex items-center gap-2">
-            <BarChart3 size={16} className="text-blue-400" /> Real-Time Chart
+            <BarChart3 size={16} className="text-slate-300" /> Real-Time Chart
           </h3>
           <p className="text-slate-500 text-xs mt-0.5">Interactive market tracking for {tvSymbol}</p>
         </div>
@@ -119,7 +119,7 @@ function TradingViewChart({ symbol }) {
               onClick={() => setActiveTimeframe(tf.label)}
               className={`px-3 py-1 text-xs font-semibold rounded-md transition-all duration-200 ${
                 activeTimeframe === tf.label
-                  ? "bg-purple-600 text-white shadow-lg shadow-purple-600/30"
+                  ? "bg-white text-black shadow-md"
                   : "text-slate-400 hover:text-white"
               }`}
             >

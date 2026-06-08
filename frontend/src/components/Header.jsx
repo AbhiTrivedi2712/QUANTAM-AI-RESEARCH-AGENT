@@ -22,7 +22,7 @@ function Header({ currentPage, setCurrentPage }) {
           </div>
 
           <div>
-            <h1 className="font-bold text-lg tracking-wider text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+            <h1 className="font-bold text-lg tracking-wider text-white" style={{ fontFamily: "'General Sans', sans-serif" }}>
               QUANTUM
             </h1>
             <p className="text-[10px] text-slate-500 font-semibold uppercase tracking-wide -mt-0.5">Financial Intelligence</p>

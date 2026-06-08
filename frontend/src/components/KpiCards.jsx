@@ -4,7 +4,7 @@
 import React from "react";
 import { DollarSign, TrendingUp, TrendingDown, Activity, Shield, AlertTriangle, Zap, Target } from "lucide-react";
 
-function KpiCards({ data }) {
+function KpiCards({ data, layout }) {
   // Extract values from the API response
   const price = data.current_price || 0.0;
   const changePct = data.change_pct || 0.0;
@@ -72,27 +72,31 @@ function KpiCards({ data }) {
     },
   ];
 
+  const containerClass = layout === "vertical"
+    ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4 h-full"
+    : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8";
+
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+    <div className={containerClass}>
       {cards.map((card, index) => (
         <div
           key={card.label}
-          className="quantum-card fade-in-up"
+          className="quantum-card fade-in-up flex flex-col justify-center h-full min-h-[92px]"
           style={{ animationDelay: `${index * 0.08}s` }}
         >
           {/* Header */}
-          <div className="flex items-center justify-between mb-3">
-            <p className="text-slate-400 text-xs font-semibold uppercase tracking-wider">{card.label}</p>
-            {React.createElement(card.icon, { className: `w-5 h-5 ${card.iconColor || "text-slate-400"}` })}
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-slate-400 text-[10px] font-semibold uppercase tracking-wider">{card.label}</p>
+            {React.createElement(card.icon, { className: `w-4 h-4 ${card.iconColor || "text-slate-400"}` })}
           </div>
 
           {/* Value */}
-          <p className={`text-2xl font-bold font-mono tracking-tight ${card.valueClass}`}>
+          <p className={`text-xl font-bold font-mono tracking-tight ${card.valueClass}`}>
             {card.value}
           </p>
 
           {/* Subtext */}
-          <p className={`text-xs mt-1.5 font-medium ${card.subtextClass || "text-slate-500"}`}>
+          <p className={`text-[10px] mt-1 font-medium ${card.subtextClass || "text-slate-500"}`}>
             {card.subtext}
           </p>
         </div>

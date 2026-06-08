@@ -1,89 +1,62 @@
-// StockInfoCard.jsx — Shows basic stock info (price, change, market cap)
-// Displayed at the top of results to give context before the agent analysis.
-
 import React from "react";
-import MiniChart from "./MiniChart";
 
-function StockInfoCard({ symbol, stockInfo }) {
-  // stockInfo comes from GET /api/stock/{symbol}
-  const { stock, timeframes } = stockInfo || {};
-
+function StockInfoCard({ symbol, stockInfo, verdict = "BULLISH", risk = "MEDIUM" }) {
+  const { stock } = stockInfo || {};
   if (!stock) return null;
 
   const isPositive = stock.change >= 0;
-  const isIndian = stock.symbol && (stock.symbol.endsWith(".NS") || stock.symbol.endsWith(".BO") || stock.symbol.endsWith(".ns") || stock.symbol.endsWith(".bo"));
+  const isIndian = stock.symbol && (stock.symbol.endsWith(".NS") || stock.symbol.endsWith(".BO"));
   const currencySymbol = isIndian ? "₹" : "$";
 
+  // Verdict style mapper
+  const getVerdictStyle = (v) => {
+    const l = v ? v.toLowerCase() : "";
+    if (l.includes("bull") || l.includes("strong") || l.includes("positive") || l.includes("buy")) {
+      return "text-emerald-400 bg-emerald-500/10 border-emerald-500/25";
+    }
+    if (l.includes("bear") || l.includes("weak") || l.includes("negative") || l.includes("sell")) {
+      return "text-red-400 bg-red-500/10 border-red-500/25";
+    }
+    return "text-amber-400 bg-amber-500/10 border-amber-500/25";
+  };
+
+  // Risk style mapper
+  const getRiskStyle = (r) => {
+    const l = r ? r.toLowerCase() : "";
+    if (l.includes("low")) {
+      return "text-emerald-450 text-emerald-400 bg-emerald-500/5 border-emerald-500/15";
+    }
+    if (l.includes("high")) {
+      return "text-red-400 bg-red-500/5 border-red-500/15";
+    }
+    return "text-amber-450 text-amber-400 bg-amber-500/5 border-amber-500/15";
+  };
+
   return (
-    <div className="quantum-card mb-6 fade-in-up">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        {/* ── Left: Company Info ──────────────────────────────────────────── */}
-        <div>
-          <div className="flex items-center gap-3 mb-1">
-            {/* Stock symbol chip */}
-            <span className="font-mono font-bold text-2xl gradient-text">
-              {stock.symbol}
-            </span>
-            <span className={`text-sm font-semibold px-2 py-0.5 rounded-md ${
-              isPositive ? "bg-emerald-500/20 text-emerald-400" : "bg-red-500/20 text-red-400"
-            }`}>
-              {isPositive ? "+" : ""}{stock.change_pct}%
-            </span>
-          </div>
-          <p className="text-slate-400 text-sm">{stock.name}</p>
+    <div className="mb-6 fade-in-up">
+      {/* symbol and name with vertical border on the left */}
+      <div className="flex items-center gap-3 border-l-[3.5px] border-[#FFBA9D] pl-3">
+        <h1 className="text-3xl font-black text-white font-mono tracking-tight leading-none uppercase">
+          {stock.symbol} | {stock.name}
+        </h1>
+      </div>
 
-          {/* Price */}
-          <div className="flex items-end gap-2 mt-2">
-            <span className="text-3xl font-bold text-white">{currencySymbol}{stock.price}</span>
-            <span className={`text-sm mb-1 ${isPositive ? "text-emerald-400" : "text-red-400"}`}>
-              {isPositive ? "▲" : "▼"} {currencySymbol}{Math.abs(stock.change)}
-            </span>
-          </div>
-        </div>
+      {/* price information and consensus badges */}
+      <div className="flex flex-wrap items-center gap-4 mt-2.5 pl-3.5 text-xs font-mono font-bold">
+        <span className="text-white text-lg font-black tracking-tight">
+          {currencySymbol}{stock.price}
+        </span>
+        <span className={`text-[12px] font-black ${isPositive ? "text-emerald-400" : "text-red-450 text-red-400"}`}>
+          ({isPositive ? "+" : ""}{stock.change_pct}%)
+        </span>
 
-        {/* ── Middle: Quick Stats ──────────────────────────────────────────── */}
-        <div className="grid grid-cols-3 gap-4 text-center">
-          <div>
-            <p className="text-slate-500 text-xs">Market Cap</p>
-            <p className="text-white font-semibold">{stock.market_cap}</p>
-          </div>
-          <div>
-            <p className="text-slate-500 text-xs">P/E Ratio</p>
-            <p className="text-white font-semibold">{stock.pe_ratio}x</p>
-          </div>
-          <div>
-            <p className="text-slate-500 text-xs">Volume</p>
-            <p className="text-white font-semibold">
-              {(stock.volume / 1_000_000).toFixed(1)}M
-            </p>
-          </div>
-          <div>
-            <p className="text-slate-500 text-xs">RSI</p>
-            <p className={`font-semibold ${
-              stock.rsi > 70 ? "text-red-400" : stock.rsi < 30 ? "text-emerald-400" : "text-white"
-            }`}>{stock.rsi}</p>
-          </div>
-          <div>
-            <p className="text-slate-500 text-xs">MACD</p>
-            <p className={`font-semibold ${stock.macd > 0 ? "text-emerald-400" : "text-red-400"}`}>
-              {stock.macd > 0 ? "+" : ""}{stock.macd}
-            </p>
-          </div>
-          <div>
-            <p className="text-slate-500 text-xs">MA 50d</p>
-            <p className="text-white font-semibold">{currencySymbol}{stock.moving_avg_50}</p>
-          </div>
-        </div>
+        <span className={`px-2.5 py-0.5 rounded border text-[9.5px] tracking-wider uppercase font-black ${getVerdictStyle(verdict)}`}>
+          {verdict} CONSENSUS
+        </span>
 
-        {/* ── Right: Mini Price Chart ──────────────────────────────────────── */}
-        <div className="w-full md:w-48">
-          <p className="text-slate-500 text-xs mb-1">7-Day Trend</p>
-          {timeframes && (
-            <MiniChart
-              prices={timeframes["1d"] ? timeframes["1d"].slice(-15) : []}
-            />
-          )}
-        </div>
+        <span className={`px-2.5 py-0.5 rounded border text-[9.5px] tracking-wider uppercase font-black ${getRiskStyle(risk)}`}>
+          {risk} RISK
+        </span>
       </div>
     </div>
   );

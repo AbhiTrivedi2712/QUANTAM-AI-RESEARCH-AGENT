@@ -4,6 +4,7 @@
 
 import React from "react";
 import { User, Database, Radio, TrendingUp, Landmark, Newspaper, Brain, BarChart3, RefreshCw, Cpu, Settings } from "lucide-react";
+import SystemStatusCard from "./SystemStatusCard";
 
 // Node definitions for the workflow diagram
 const NODES = [
@@ -107,7 +108,7 @@ function Node({ node, delay = 0 }) {
   );
 }
 
-function ArchitecturePage() {
+function ArchitecturePage({ systemStatus }) {
   return (
     <div className="max-w-7xl mx-auto px-6 py-8">
       {/* ── Page Header ────────────────────────────────────────────────────── */}
@@ -264,6 +265,12 @@ function ArchitecturePage() {
               ))}
             </div>
           </div>
+
+          {systemStatus && (
+            <div className="fade-in-up">
+              <SystemStatusCard systemStatus={systemStatus} />
+            </div>
+          )}
         </div>
       </div>
     </div>

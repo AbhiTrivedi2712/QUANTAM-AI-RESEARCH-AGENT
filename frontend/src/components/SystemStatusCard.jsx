@@ -39,8 +39,8 @@ function SystemStatusCard({ systemStatus }) {
     <div className="quantum-card p-5 mb-6 fade-in-up" style={{ animationDelay: "0.1s" }}>
       <div className="flex items-center justify-between border-b border-white/5 pb-3 mb-4">
         <div>
-          <span className="text-slate-500 text-[10px] font-semibold uppercase tracking-wider">Gateway Telemetry</span>
-          <h3 className="text-white font-bold text-sm mt-0.5 flex items-center gap-1.5">
+          <span className="text-slate-400 text-[11px] font-bold uppercase tracking-[0.1em]">Gateway Telemetry</span>
+          <h3 className="text-white font-black text-base mt-1 flex items-center gap-1.5">
             <Shield size={16} className="text-blue-400" /> System Infrastructure Status
           </h3>
         </div>

@@ -36,16 +36,16 @@ function AgentCard({ title, icon, verdict, confidence, reason, details, delay = 
       }}
     >
       {/* Glow effect on hover */}
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-cyan-500/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-slate-500/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
 
       <div>
         {/* Header Title Row */}
         <div className="flex items-center justify-between border-b border-white/5 pb-3 mb-4">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-sm shadow-inner group-hover:scale-110 transition-transform duration-300">
-              {isTech && <TrendingUp size={14} className="text-blue-400" />}
-              {isFund && <Landmark size={14} className="text-sky-400" />}
-              {isSent && <Newspaper size={14} className="text-teal-400" />}
+            <div className="w-8 h-8 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-sm shadow-inner group-hover:scale-110 transition-transform duration-300">
+              {isTech && <TrendingUp size={14} className="text-slate-300" />}
+              {isFund && <Landmark size={14} className="text-slate-300" />}
+              {isSent && <Newspaper size={14} className="text-slate-300" />}
             </div>
             <div>
               <h4 className="font-bold text-white text-xs tracking-wider uppercase font-mono">{title.split(" ")[0]} NODE</h4>
@@ -117,7 +117,7 @@ function AgentCard({ title, icon, verdict, confidence, reason, details, delay = 
         </p>
       </div>
 
-      <div className="mt-4 pt-3 border-t border-white/5 flex justify-between items-center text-[9px] font-mono text-blue-400 font-bold tracking-wider group-hover:text-blue-300">
+      <div className="mt-4 pt-3 border-t border-white/5 flex justify-between items-center text-[9px] font-mono text-slate-400 font-bold tracking-wider group-hover:text-white transition-colors duration-200">
         <span>LAUNCH TERMINAL</span>
         <span>→</span>
       </div>
