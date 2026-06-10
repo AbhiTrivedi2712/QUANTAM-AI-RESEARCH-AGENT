@@ -226,11 +226,11 @@ function App() {
         />
       ) : currentPage === "Architecture" ? (
         <ArchitecturePage systemStatus={analysisData?.system_status || (backendHealth.online ? {
-          backend_status: "ONLINE",
-          groq_status: "ONLINE",
-          yfinance_status: "ONLINE",
-          news_status: "ONLINE",
-          cache_status: "ACTIVE",
+          backend_status: "Online",
+          groq_status: "Online",
+          yfinance_status: "Online",
+          news_status: "Online",
+          cache_status: "Active",
           cache_ttl_sec: 300,
           execution_time_sec: 0.05
         } : null)} />
@@ -648,7 +648,7 @@ function App() {
                 <tr>
                   <td style={{ border: "1px solid #ddd", padding: "6px" }}>AI Inference Model</td>
                   <td style={{ border: "1px solid #ddd", padding: "6px" }}>
-                    {analysisData.system_status?.groq_status === "Fallback Mode" ? "Heuristic Rules (Fallback Mode)" : "Llama 3.3 70B (Groq Gateway)"}
+                    {(analysisData.system_status?.groq_status || "").toLowerCase() === "fallback mode" ? "Heuristic Rules (Fallback Mode)" : "Llama 3.3 70B (Groq Gateway)"}
                   </td>
                 </tr>
                 <tr>

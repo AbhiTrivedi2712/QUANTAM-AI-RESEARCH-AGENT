@@ -74,14 +74,55 @@ def get_stock_data(symbol: str) -> dict:
         hist = ticker.history(period="1y", interval="1d")
         if hist.empty:
             raise ValueError(f"No historical data returned for {resolved_symbol}")
+
+        # Drop rows with NaN close prices (yfinance may return NaN for most recent incomplete candle)
+        hist = hist.dropna(subset=['Close'])
+        if hist.empty:
+            raise ValueError(f"No valid historical close prices for {resolved_symbol}")
             
         close_prices = hist['Close']
-        last_price = float(close_prices.iloc[-1])
-        prev_close = float(close_prices.iloc[-2]) if len(close_prices) > 1 else last_price
-        
-        # Calculate daily change and percentage
-        change = last_price - prev_close
-        change_pct = (change / prev_close) * 100 if prev_close else 0.0
+        hist_last_price = float(close_prices.iloc[-1])
+
+        # 2a. Fetch Fundamental Data first so we can pull live price from info
+        info = ticker.info
+
+        # Determine the market state (REGULAR, PRE, POST, CLOSED, etc.)
+        market_state = (info.get("marketState") or "").upper()
+
+        # Resolve the best available current price and matching change data
+        # based on the current market session.
+        reg_price   = info.get("regularMarketPrice") or info.get("currentPrice")
+        pre_price   = info.get("preMarketPrice")
+        post_price  = info.get("postMarketPrice")
+
+        if market_state == "PRE" and pre_price:
+            # Pre-market session: show the pre-market price
+            last_price = float(pre_price)
+            change     = float(info.get("preMarketChange") or 0.0)
+            # Derive pct from the actual price delta — avoids ambiguity in
+            # yfinance returning the field as a fraction vs. a percentage.
+            prev_price = last_price - change
+            change_pct = (change / prev_price * 100) if prev_price else 0.0
+        elif market_state in ("POST", "POSTPOST") and post_price:
+            # After-hours session: show the post-market price
+            last_price = float(post_price)
+            change     = float(info.get("postMarketChange") or 0.0)
+            prev_price = last_price - change
+            change_pct = (change / prev_price * 100) if prev_price else 0.0
+        else:
+            # Regular market hours (or fallback for CLOSED/unknown states)
+            last_price = float(reg_price) if reg_price else hist_last_price
+            # Prefer pre-computed change values from info when available
+            if info.get("regularMarketChange") is not None and info.get("regularMarketChangePercent") is not None:
+                change     = float(info["regularMarketChange"])
+                change_pct = float(info["regularMarketChangePercent"])
+            else:
+                prev_close_info = info.get("previousClose") or info.get("regularMarketPreviousClose")
+                prev_close = float(prev_close_info) if prev_close_info else (
+                    float(close_prices.iloc[-2]) if len(close_prices) > 1 else last_price
+                )
+                change     = last_price - prev_close
+                change_pct = (change / prev_close) * 100 if prev_close else 0.0
         
         # Calculate Technical Indicators
         # Moving Averages
@@ -111,8 +152,7 @@ def get_stock_data(symbol: str) -> dict:
         resistance = float(recent_data.max())
 
         
-        # 2. Fetch Fundamental Data from ticker info
-        info = ticker.info
+        # 2. Use already-fetched ticker info for fundamental data
         name = info.get("longName") or info.get("shortName") or f"{symbol} Corp."
         market_cap_raw = info.get("marketCap")
         if market_cap_raw:
@@ -125,41 +165,51 @@ def get_stock_data(symbol: str) -> dict:
         else:
             market_cap = "N/A"
             
-        pe_ratio = info.get("trailingPE") or info.get("forwardPE") or 0.0
+        pe_ratio_raw = info.get("trailingPE") or info.get("forwardPE") or 0.0
+        pe_ratio = 0.0 if (pe_ratio_raw != pe_ratio_raw) else float(pe_ratio_raw)  # NaN check
         
         # Growth rates (convert standard decimals from yfinance info to percentages)
-        rev_growth = info.get("revenueGrowth")
-        rev_growth = float(rev_growth * 100) if rev_growth is not None else 0.0
+        rev_growth_raw = info.get("revenueGrowth")
+        rev_growth = float(rev_growth_raw * 100) if (rev_growth_raw is not None and rev_growth_raw == rev_growth_raw) else 0.0
         
-        earn_growth = info.get("earningsGrowth")
-        earn_growth = float(earn_growth * 100) if earn_growth is not None else 0.0
+        earn_growth_raw = info.get("earningsGrowth")
+        earn_growth = float(earn_growth_raw * 100) if (earn_growth_raw is not None and earn_growth_raw == earn_growth_raw) else 0.0
         
         total_revenue = info.get("totalRevenue") or 0.0
         net_income = info.get("netIncomeToCommon") or info.get("netIncome") or 0.0
         volume = info.get("regularMarketVolume") or info.get("volume") or int(hist['Volume'].iloc[-1])
+
+        def safe_float(val, default=0.0):
+            """Returns default if val is NaN or None."""
+            try:
+                f = float(val)
+                return default if f != f else f  # NaN != NaN
+            except (TypeError, ValueError):
+                return default
         
         return {
             "symbol": resolved_symbol,
             "name": name,
-            "price": round(last_price, 2),
-            "change": round(change, 2),
-            "change_pct": round(change_pct, 2),
+            "price": round(safe_float(last_price), 2),
+            "change": round(safe_float(change), 2),
+            "change_pct": round(safe_float(change_pct), 2),
+            "market_state": market_state,  # "PRE", "POST", "REGULAR", "CLOSED", etc.
             "volume": volume,
             "market_cap": market_cap,
             "pe_ratio": round(pe_ratio, 1) if pe_ratio else None,
             "revenue_growth": round(rev_growth, 1),
             "earnings_growth": round(earn_growth, 1),
-            "total_revenue": total_revenue,
-            "net_income": net_income,
-            "rsi": round(rsi_val, 1),
-            "macd": round(macd_val, 2),
-            "macd_signal": round(macd_signal, 2),
-            "macd_hist": round(macd_hist_val, 2),
-            "moving_avg_50": round(ma_50, 2),
-            "moving_avg_200": round(ma_200, 2),
-            "support": round(support, 2),
-            "resistance": round(resistance, 2),
-            "volatility": round(vol_score, 1),
+            "total_revenue": safe_float(total_revenue),
+            "net_income": safe_float(net_income),
+            "rsi": round(safe_float(rsi_val, 50.0), 1),
+            "macd": round(safe_float(macd_val), 2),
+            "macd_signal": round(safe_float(macd_signal), 2),
+            "macd_hist": round(safe_float(macd_hist_val), 2),
+            "moving_avg_50": round(safe_float(ma_50, last_price), 2),
+            "moving_avg_200": round(safe_float(ma_200, last_price), 2),
+            "support": round(safe_float(support, last_price), 2),
+            "resistance": round(safe_float(resistance, last_price), 2),
+            "volatility": round(safe_float(vol_score, 15.0), 1),
             "source": "Yahoo Finance (Real-Time)"
         }
         
@@ -214,11 +264,13 @@ def get_multiple_timeframes(symbol: str) -> dict:
         # 15m (5 days)
         hist_15m = ticker.history(period="5d", interval="15m")
         if not hist_15m.empty:
+            hist_15m = hist_15m.dropna(subset=['Close'])
             timeframes["15m"] = hist_15m['Close'].round(2).tolist()
             
         # 1h (1 month)
         hist_1h = ticker.history(period="1mo", interval="1h")
         if not hist_1h.empty:
+            hist_1h = hist_1h.dropna(subset=['Close'])
             timeframes["1h"] = hist_1h['Close'].round(2).tolist()
             
             # Resample 1h to 4h (generate Open, High, Low, Close, Volume)
@@ -243,11 +295,13 @@ def get_multiple_timeframes(symbol: str) -> dict:
         # 1d (6 months)
         hist_1d = ticker.history(period="6mo", interval="1d")
         if not hist_1d.empty:
+            hist_1d = hist_1d.dropna(subset=['Close'])
             timeframes["1d"] = hist_1d['Close'].round(2).tolist()
             
         # 1w (1 year)
         hist_1w = ticker.history(period="1y", interval="1wk")
         if not hist_1w.empty:
+            hist_1w = hist_1w.dropna(subset=['Close'])
             timeframes["1w"] = hist_1w['Close'].round(2).tolist()
             
         # Standardize fallback keys if any timeframe is missing

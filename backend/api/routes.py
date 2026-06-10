@@ -12,6 +12,7 @@ from dotenv import load_dotenv
 import time
 import re
 import json
+import math
 from collections import defaultdict
 
 # Load environment variables from .env
@@ -64,6 +65,18 @@ if DEMO_MODE:
         logger.error(f"Error loading demo_reports.json in API initialization: {str(demo_err)}")
 
 router = APIRouter()
+
+def sanitize_nans(obj):
+    """Recursively replace NaN/Infinity float values with 0 or None for JSON safety."""
+    if isinstance(obj, dict):
+        return {k: sanitize_nans(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [sanitize_nans(i) for i in obj]
+    elif isinstance(obj, float):
+        if math.isnan(obj) or math.isinf(obj):
+            return 0.0
+        return obj
+    return obj
 
 
 @router.post("/analyze", response_model=AnalyzeResponse)
@@ -250,6 +263,7 @@ async def analyze_stock(request: AnalyzeRequest, req: Request):
         "stock": resolved_symbol,
         "current_price": stock_data["price"],
         "change_pct": stock_data["change_pct"],
+        "market_state": stock_data.get("market_state", ""),
         "technical": technical_result,
         "fundamental": fundamental_result,
         "sentiment": sentiment_result,
@@ -257,6 +271,9 @@ async def analyze_stock(request: AnalyzeRequest, req: Request):
         "system_status": system_status,
         "timeline": timeline
     }
+    
+    # Sanitize all NaN/Inf floats before caching and returning
+    response_data = sanitize_nans(response_data)
     
     # Store in cache
     cache_service.set_in_cache(resolved_symbol, response_data)
@@ -292,10 +309,10 @@ async def get_stock_info(symbol: str):
     try:
         stock_data = stock_service.get_stock_data(resolved_symbol)
         timeframe_data = stock_service.get_multiple_timeframes(resolved_symbol)
-        return {
+        return sanitize_nans({
             "stock": stock_data,
             "timeframes": timeframe_data
-        }
+        })
     except Exception as e:
         logger.error(f"Error fetching stock info for {resolved_symbol}: {str(e)}")
         raise HTTPException(

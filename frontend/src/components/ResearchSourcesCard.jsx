@@ -6,9 +6,9 @@ export default function ResearchSourcesCard({ systemStatus, totalArticles, isFal
 
   const { groq_status, execution_time_sec } = systemStatus;
 
-  // Determine AI calls count
-  const aiCalls = groq_status === "Online" ? 4 : (groq_status === "Fallback Mode" ? 0 : 0);
-  const aiModel = groq_status === "Fallback Mode" ? "Heuristic Rules (Fallback)" : "Llama 3.3 70B (Groq)";
+  const groqLower = (groq_status || "").toLowerCase();
+  const aiCalls = groqLower === "online" ? 4 : 0;
+  const aiModel = groqLower === "fallback mode" ? "Heuristic Rules (Fallback)" : "Llama 3.3 70B (Groq)";
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6 fade-in-up" style={{ animationDelay: "0.2s" }}>
@@ -47,7 +47,7 @@ export default function ResearchSourcesCard({ systemStatus, totalArticles, isFal
               <span className="text-slate-400">AI Reasoning Engine</span>
               <div className="text-right">
                 <span className="text-white font-bold block">Groq Cloud API</span>
-                <span className={`text-[9px] font-bold block mt-0.5 uppercase ${groq_status === "Online" ? "text-emerald-450 text-emerald-400" : "text-amber-400 animate-pulse"}`}>
+                <span className={`text-[9px] font-bold block mt-0.5 uppercase ${groqLower === "online" ? "text-emerald-450 text-emerald-400" : "text-amber-400 animate-pulse"}`}>
                   Status: {groq_status}
                 </span>
               </div>

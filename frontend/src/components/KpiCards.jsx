@@ -8,6 +8,7 @@ function KpiCards({ data, layout }) {
   // Extract values from the API response
   const price = data.current_price || 0.0;
   const changePct = data.change_pct || 0.0;
+  const marketState = (data.market_state || "").toUpperCase();
   const { market_bias, confidence, risk } = data.final_decision || {};
 
   const isUp = changePct >= 0;
@@ -37,6 +38,7 @@ function KpiCards({ data, layout }) {
     {
       label: "Current Price",
       value: `${currencySymbol}${price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+      sessionBadge: marketState === "PRE" ? "PRE" : marketState === "POST" || marketState === "POSTPOST" ? "POST" : null,
       icon: DollarSign,
       iconColor: isUp ? "text-emerald-400" : "text-red-400",
       valueClass: "text-white",
@@ -91,9 +93,20 @@ function KpiCards({ data, layout }) {
           </div>
 
           {/* Value */}
-          <p className={`text-xl font-bold font-mono tracking-tight ${card.valueClass}`}>
-            {card.value}
-          </p>
+          <div className="flex items-baseline gap-2">
+            <p className={`text-xl font-bold font-mono tracking-tight ${card.valueClass}`}>
+              {card.value}
+            </p>
+            {card.sessionBadge && (
+              <span className={`text-[9px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded ${
+                card.sessionBadge === "PRE"
+                  ? "bg-blue-500/20 text-blue-400 border border-blue-500/30"
+                  : "bg-purple-500/20 text-purple-400 border border-purple-500/30"
+              }`}>
+                {card.sessionBadge}
+              </span>
+            )}
+          </div>
 
           {/* Subtext */}
           <p className={`text-[10px] mt-1 font-medium ${card.subtextClass || "text-slate-500"}`}>

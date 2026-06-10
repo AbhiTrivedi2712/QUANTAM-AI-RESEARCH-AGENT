@@ -37,8 +37,9 @@ function SystemStatusCard({ systemStatus }) {
   const market = getStatusBadge(yfinance_status, "market");
   const news = getStatusBadge(news_status, "news");
   const ai = getStatusBadge(groq_status, "ai");
+  const groqLower = (groq_status || "").toLowerCase();
   const consensus = getStatusBadge(
-    groq_status === "Online" ? "active" : (groq_status === "Fallback Mode" ? "fallback mode" : "offline"), 
+    groqLower === "online" ? "active" : (groqLower === "fallback mode" ? "fallback mode" : "offline"), 
     "consensus"
   );
   const cache = getStatusBadge(cache_status, "cache");
