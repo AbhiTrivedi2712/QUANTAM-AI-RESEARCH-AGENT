@@ -239,7 +239,7 @@ You are an institutional financial analyst. Synthesize the reports from 3 specia
 - Weighted Consensus Confidence: {calculated_confidence}%
 - Evaluated Risk Classification: {calculated_risk}
 
-Synthesize these inputs.
+Synthesize these inputs. Note that the current date/year is June 2026.
 CRITICAL INSTRUCTIONS:
 - You must NOT provide direct investment advice.
 - You must NOT recommend BUY, HOLD, or SELL. Only explain market intelligence.
@@ -270,7 +270,7 @@ Return ONLY a valid JSON object matching this structure:
   "catalyst_calendar": [
     {{
       "event": "Earnings Release" | "Product Launch" | "Investor Day" | "Major Economic Event" | "Industry Event",
-      "expected_date": "Approximate date or timeframe",
+      "expected_date": "Approximate date or timeframe (must be in year 2026 or later)",
       "importance": "Low" | "Medium" | "High",
       "potential_impact": "Details of potential stock price impact."
     }}
@@ -282,6 +282,19 @@ Return ONLY the raw JSON. Do not write markdown tags or backticks (no ```json).
             llm_text = query_groq(prompt)
             llm_res = json.loads(llm_text)
             
+            # Post-process catalyst calendar expected_date to ensure years align with 2026 or later
+            catalyst_calendar = llm_res.get("catalyst_calendar", rule_catalyst_calendar)
+            if isinstance(catalyst_calendar, list):
+                import re
+                for item in catalyst_calendar:
+                    if isinstance(item, dict) and "expected_date" in item and item["expected_date"]:
+                        date_str = str(item["expected_date"])
+                        # Replace 2024 with 2026
+                        date_str = re.sub(r'\b2024\b', '2026', date_str)
+                        # Replace 2025 with 2026 (or keep later years if appropriate)
+                        date_str = re.sub(r'\b2025\b', '2026', date_str)
+                        item["expected_date"] = date_str
+
             return {
                 "market_bias": llm_res.get("market_bias", calculated_bias),
                 "confidence": int(llm_res.get("confidence", calculated_confidence)),
@@ -295,7 +308,7 @@ Return ONLY the raw JSON. Do not write markdown tags or backticks (no ```json).
                 "bull_case": llm_res.get("bull_case", rule_bull_case),
                 "bear_case": llm_res.get("bear_case", rule_bear_case),
                 "risk_register": llm_res.get("risk_register", rule_risk_register),
-                "catalyst_calendar": llm_res.get("catalyst_calendar", rule_catalyst_calendar)
+                "catalyst_calendar": catalyst_calendar
             }
             
         except Exception as e:

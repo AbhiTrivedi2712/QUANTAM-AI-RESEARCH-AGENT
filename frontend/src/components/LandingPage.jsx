@@ -706,7 +706,7 @@ function LandingPage({ onStartResearch, onViewArchitecture }) {
               <div className="w-6 h-6 rounded border border-[#FFBA9D]/30 flex items-center justify-center mb-4 text-[#FFBA9D] font-mono text-[10px] font-bold">4</div>
               <h3 className="text-white font-black text-lg mb-2">Executive Summary</h3>
               <p className="text-slate-200 text-sm leading-relaxed">
-                Buy/Hold/Sell recommendation, confidence score, key drivers, and risks.
+                 confidence score, key drivers, and risks.
               </p>
             </div>
           </div>

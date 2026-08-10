@@ -6,7 +6,7 @@ import axios from "axios";
 
 // The base URL of our FastAPI backend
 // Change this if you deploy the backend to a different server
-const BASE_URL = "http://localhost:8000/api";
+const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000/api";
 
 // Create an axios instance with default settings
 const api = axios.create({
@@ -40,7 +40,8 @@ export async function checkHealth() {
  * Perform a root health check (GET /health) to verify connectivity.
  */
 export async function checkBackendHealth() {
-  const response = await axios.get("http://localhost:8000/health", { timeout: 3000 });
+  const healthUrl = BASE_URL.replace(/\/api\/?$/, "/health");
+  const response = await axios.get(healthUrl, { timeout: 3000 });
   return response.data;
 }
 

@@ -10,7 +10,7 @@ import time
 _cache = {}
 
 # How long to keep a result before considering it stale (in seconds)
-CACHE_TTL = 300  # 5 minutes
+CACHE_TTL = 60  # 1 minute — keeps prices fresh during demo
 
 
 def get_from_cache(key: str):

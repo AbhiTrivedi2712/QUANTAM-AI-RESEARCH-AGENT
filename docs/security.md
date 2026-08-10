@@ -1,32 +1,55 @@
-# Security and Safety Controls: Quantum Agent
+# 🔒 Security and Safety Controls: Quantum Agent
 
-This document explains the security measures, input validations, logging systems, and API key management of the **QUANTUM AGENT** platform.
+This document explains the security mechanisms, validation rules, CORS protections, and secret isolation guidelines implemented on the **QUANTUM** platform.
 
 ---
 
-## 🔒 No Secrets on Client Side
-The React front-end application contains **zero** hardcoded credentials or API keys:
-* All integration endpoints (Yahoo Finance, news parsing, optional LLM configurations) are initiated on the backend server.
-* The frontend simply calls the backend via `axios` at `/api/analyze` using relative routing or local environment configurations, keeping credentials hidden behind the server's environment block.
+## 🔒 Secret Isolation (No Client Keys)
+
+The React client application contains **zero credentials or API keys**:
+- **Backend Proxying**: All integration tasks (fetching Yahoo Finance data, news feed scraping, and Groq API calls) run on the backend server.
+- **Server Environment Isolation**: API keys (`GROQ_API_KEY`, `GEMINI_API_KEY`) are kept isolated on the server-side environment block. The client calls a unified relative endpoint `/api/analyze` using its base URL, keeping secrets secure.
 
 ---
 
 ## 🛡️ Input Validation & Sanitization
-* The backend utilizes **Pydantic v2** models (`AnalyzeRequest`) for strict request schema validation.
-* Empty ticker symbols or excessive inputs (>10 characters) are rejected before spawning subprocesses or requesting external resources.
-* Symbol inputs are automatically stripped, capitalized, and validated for safe character sets (`^[A-Z0-9\.\-]+$`) during preprocessing.
+
+To protect downstream processing against execution errors or injection vectors, the backend employs a multi-tiered validation approach:
+
+### 1. Schema Validation (Pydantic v2)
+FastAPI uses Pydantic schemas (`AnalyzeRequest`) to validate payload shapes. Empty symbols or non-string values are rejected automatically (HTTP 422).
+
+### 2. Regex Format Validation
+Before calling yfinance or executing analysis tasks, the server verifies the symbol format using a strict regular expression:
+```python
+import re
+
+def is_valid_symbol_format(symbol: str) -> bool:
+    """Checks for standard equity tickers (1-15 Alphanumerics, optional NSE dot or suffix)."""
+    return bool(re.match(r"^[A-Z0-9\.\-]{1,15}$", symbol))
+```
+- **Constraints**: Restricts symbols to standard letters, numbers, dots, and hyphens. Length is capped at 15 characters.
+- **Rejection**: Tickers failing regex validation are rejected with an HTTP 400 (`INVALID_TICKER` error).
 
 ---
 
 ## 🌐 CORS Constraints
-FastAPI's standard CORSMiddleware restricts cross-origin queries to approved development hosts:
-* Approved Dev origins: `http://localhost:5173` (Vite) and `http://localhost:3000` (React).
-* Production origins can be loaded from environment variables (`CORS_ALLOWED_ORIGINS`).
+
+FastAPI's `CORSMiddleware` limits access to approved origins:
+* **Development Defaults**: Allows typical local ports: `http://localhost:5173`, `http://localhost:3000`.
+* **Dynamic Production Origins**: Production origins can be loaded from the `ALLOWED_ORIGINS` environment variable.
+* **Safe Credentials Configuration**: If the wildcard `"*"` origin is configured, the server automatically disables `allow_credentials=True` to comply with CORS security standards and prevent browser exploits.
 
 ---
 
-## 📜 Logging & System Diagnostics
-The backend incorporates Python's standard `logging` module to capture trace details without logging sensitive variables:
-* **Trace Information**: Logs orchestration flow milestones (e.g. cache hits, data acquisitions, and sub-agent processes).
-* **Exception Traps**: Employs global try/catch wrappers for all external connections, logging technical details locally to the console and returning standardized, non-leaking HTTP status codes (`500 Internal Server Error` with generalized messages).
-* **Environment Verification**: The `/health` check confirms whether `GEMINI_API_KEY` is loaded in memory as a boolean flag without printing the key itself.
+## 📜 System Diagnostics & Safe Health Checks
+
+The backend provides a `/api/health` diagnostics check:
+- **No Secret Leaks**: The endpoint checks for keys without printing the keys themselves. It returns a boolean flag indicating if the key is loaded in memory:
+  ```json
+  "environment": {
+      "groq_api_key_configured": true,
+      "gemini_api_key_configured": true
+  }
+  ```
+- **Error Masks**: Exceptions from sub-processes or external connections are caught, logged internally, and returned as generic messages to prevent internal paths or system details from leaking.

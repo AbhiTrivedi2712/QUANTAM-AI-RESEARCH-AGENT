@@ -8,6 +8,32 @@ import pandas as pd
 import numpy as np
 import random
 import logging
+import requests
+from requests.adapters import HTTPAdapter
+
+class TimeoutHTTPAdapter(HTTPAdapter):
+    def __init__(self, *args, **kwargs):
+        self.timeout = kwargs.pop("timeout", 5.0)
+        super().__init__(*args, **kwargs)
+
+    def send(self, request, **kwargs):
+        timeout = kwargs.get("timeout")
+        if timeout is None:
+            kwargs["timeout"] = self.timeout
+        return super().send(request, **kwargs)
+
+def get_timeout_session(timeout=5.0):
+    session = requests.Session()
+    session.headers.update({
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+    })
+    adapter = TimeoutHTTPAdapter(timeout=timeout)
+    session.mount("https://", adapter)
+    session.mount("http://", adapter)
+    return session
+
+# Global session with 5-second timeout for yfinance requests
+_yf_session = get_timeout_session(5.0)
 
 logger = logging.getLogger("quantum_agent.stock_service")
 
@@ -68,7 +94,7 @@ def get_stock_data(symbol: str) -> dict:
     resolved_symbol = resolve_symbol(symbol)
     
     try:
-        ticker = yf.Ticker(resolved_symbol)
+        ticker = yf.Ticker(resolved_symbol, session=_yf_session)
         
         # 1. Fetch historical data for technical indicators (1 year of daily history)
         hist = ticker.history(period="1y", interval="1d")
@@ -83,46 +109,75 @@ def get_stock_data(symbol: str) -> dict:
         close_prices = hist['Close']
         hist_last_price = float(close_prices.iloc[-1])
 
-        # 2a. Fetch Fundamental Data first so we can pull live price from info
-        info = ticker.info
+        # 2a. Try fast_info first — it is a lightweight, reliable endpoint that
+        #     doesn't degrade over time unlike the heavy ticker.info scrape.
+        fast_last_price = None
+        fast_prev_close = None
+        try:
+            fi = ticker.fast_info
+            _fl = getattr(fi, 'last_price', None)
+            _pc = getattr(fi, 'previous_close', None)
+            if _fl and float(_fl) > 0:
+                fast_last_price = float(_fl)
+            if _pc and float(_pc) > 0:
+                fast_prev_close = float(_pc)
+        except Exception as fi_err:
+            logger.warning(f"fast_info unavailable for {resolved_symbol}: {fi_err}")
 
-        # Determine the market state (REGULAR, PRE, POST, CLOSED, etc.)
+        # 2b. Fetch full info dict for fundamental data and market state
+        try:
+            info = ticker.info
+            if not info or not isinstance(info, dict):
+                info = {}
+        except Exception as info_err:
+            logger.warning(f"Failed to fetch ticker info for {resolved_symbol}: {str(info_err)}")
+            info = {}
+
+        # Determine the market state (REGULAR, PRE, POST, CLOSED, POSTPOST, etc.)
         market_state = (info.get("marketState") or "").upper()
 
-        # Resolve the best available current price and matching change data
-        # based on the current market session.
-        reg_price   = info.get("regularMarketPrice") or info.get("currentPrice")
-        pre_price   = info.get("preMarketPrice")
-        post_price  = info.get("postMarketPrice")
+        # ── Price Resolution Strategy ──────────────────────────────────────────
+        # We ALWAYS show the last regular-session price as the primary price.
+        # Pre/post market prices can deviate wildly on thin volume and confuse
+        # users. The market_state field conveys session context separately.
+        #
+        # Priority order for the live price:
+        #   1. fast_info.last_price  — lightweight, always fresh, regular session
+        #   2. info.regularMarketPrice / info.currentPrice — from the full scrape
+        #   3. history last Close  — ultimate fallback
+        # ──────────────────────────────────────────────────────────────────────
+        reg_price_info = info.get("regularMarketPrice") or info.get("currentPrice")
 
-        if market_state == "PRE" and pre_price:
-            # Pre-market session: show the pre-market price
-            last_price = float(pre_price)
-            change     = float(info.get("preMarketChange") or 0.0)
-            # Derive pct from the actual price delta — avoids ambiguity in
-            # yfinance returning the field as a fraction vs. a percentage.
-            prev_price = last_price - change
-            change_pct = (change / prev_price * 100) if prev_price else 0.0
-        elif market_state in ("POST", "POSTPOST") and post_price:
-            # After-hours session: show the post-market price
-            last_price = float(post_price)
-            change     = float(info.get("postMarketChange") or 0.0)
-            prev_price = last_price - change
-            change_pct = (change / prev_price * 100) if prev_price else 0.0
+        if fast_last_price:
+            last_price = fast_last_price
+        elif reg_price_info:
+            last_price = float(reg_price_info)
         else:
-            # Regular market hours (or fallback for CLOSED/unknown states)
-            last_price = float(reg_price) if reg_price else hist_last_price
-            # Prefer pre-computed change values from info when available
-            if info.get("regularMarketChange") is not None and info.get("regularMarketChangePercent") is not None:
-                change     = float(info["regularMarketChange"])
-                change_pct = float(info["regularMarketChangePercent"])
-            else:
-                prev_close_info = info.get("previousClose") or info.get("regularMarketPreviousClose")
-                prev_close = float(prev_close_info) if prev_close_info else (
-                    float(close_prices.iloc[-2]) if len(close_prices) > 1 else last_price
-                )
-                change     = last_price - prev_close
-                change_pct = (change / prev_close) * 100 if prev_close else 0.0
+            last_price = hist_last_price
+
+        # Change and change_pct vs previous regular-session close
+        if info.get("regularMarketChange") is not None and info.get("regularMarketChangePercent") is not None:
+            change     = float(info["regularMarketChange"])
+            # yfinance sometimes returns regularMarketChangePercent as a raw
+            # fraction (e.g. -0.003356) in older versions — detect and correct.
+            raw_pct = float(info["regularMarketChangePercent"])
+            change_pct = raw_pct * 100 if abs(raw_pct) < 1.5 and abs(raw_pct) < abs(change / last_price * 0.5) else raw_pct
+        else:
+            # Derive from previous close
+            prev_close_val = (
+                fast_prev_close
+                or info.get("previousClose")
+                or info.get("regularMarketPreviousClose")
+            )
+            prev_close = float(prev_close_val) if prev_close_val else (
+                float(close_prices.iloc[-2]) if len(close_prices) > 1 else last_price
+            )
+            change     = last_price - prev_close
+            change_pct = (change / prev_close) * 100 if prev_close else 0.0
+
+        # Expose pre/post prices as supplemental context (not overriding main price)
+        pre_price  = info.get("preMarketPrice")
+        post_price = info.get("postMarketPrice")
         
         # Calculate Technical Indicators
         # Moving Averages
@@ -259,7 +314,7 @@ def get_multiple_timeframes(symbol: str) -> dict:
     timeframes = {}
     
     try:
-        ticker = yf.Ticker(resolved_symbol)
+        ticker = yf.Ticker(resolved_symbol, session=_yf_session)
         
         # 15m (5 days)
         hist_15m = ticker.history(period="5d", interval="15m")
@@ -350,7 +405,7 @@ def is_ticker_valid(symbol: str) -> bool:
         resolved = resolve_symbol(symbol)
         
         # Test basic initialization (triggers ValueErrors on bad formatting e.g. ISIN check)
-        ticker = yf.Ticker(resolved)
+        ticker = yf.Ticker(resolved, session=_yf_session)
         
         # Fetch 1-day history to check existence
         hist = ticker.history(period="1d")

@@ -12,6 +12,22 @@ logger = logging.getLogger("quantum_agent.llm_service")
 GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
 DEFAULT_MODEL = "llama-3.3-70b-versatile"
 
+import re
+
+def clean_json_text(text: str) -> str:
+    """Strips markdown code blocks and extracts JSON object from LLM response."""
+    if not text:
+        return text
+    text = text.strip()
+    # Strip markdown backticks
+    text = re.sub(r"^```(?:json)?\s*", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"\s*```$", "", text)
+    # Match outermost curly braces to extract raw JSON
+    match = re.search(r"(\{.*\})", text, re.DOTALL)
+    if match:
+        return match.group(1)
+    return text
+
 def query_groq(prompt: str, system_prompt: str = None, response_json: bool = True) -> str:
     """
     Directly queries the Groq API via HTTP POST.
@@ -62,7 +78,10 @@ def query_groq(prompt: str, system_prompt: str = None, response_json: bool = Tru
                 if not choices:
                     raise ValueError("Groq returned response without choices.")
                     
-                return choices[0]["message"]["content"]
+                content = choices[0]["message"]["content"]
+                if response_json:
+                    content = clean_json_text(content)
+                return content
         except Exception as e:
             last_err = e
             logger.warning(f"Groq API connection attempt {attempt + 1} failed: {str(e)}")

@@ -1,105 +1,74 @@
-# Groq LLM Integration and Fallback Architecture
+# 🤖 Groq LLM Integration & Fallback Architecture
 
-This document explains the design, routing mechanisms, prompt interfaces, and fallback controls for the LLM integration inside the **QUANTUM AGENT** platform.
-
----
-
-## 🤖 Reasoning Backbone: llama-3.3-70b-versatile
-
-The reasoning engine utilizes **llama-3.3-70b-versatile** hosted on the **Groq API** gateway, providing high-speed inference, complex context processing, and native JSON mode configuration.
+This document explains the integration parameters, prompt interfaces, JSON cleaning utilities, and error fallback systems used to interface with the LLM.
 
 ---
 
-## 🛰️ Integration Topography
+## 🤖 Reasoning Model: llama-3.3-70b-versatile
 
-Rather than introducing heavy libraries, the platform connects directly to the Groq Chat Completions endpoint (`https://api.groq.com/openai/v1/chat/completions`) using the synchronous `httpx` HTTP client.
+The platform leverages **llama-3.3-70b-versatile** on the **Groq API** gateway to run multi-agent syntheses. This model provides rapid inference times, broad financial reasoning capabilities, and support for structured JSON outputs.
 
-* **Mode**: Strict JSON enforcement (`response_format={"type": "json_object"}`).
-* **Conviction Check**: Strict 10.0-second timeouts to avoid page load freeze on front-end dashboards.
+---
+
+## 🛰️ Integration Details & Parameters
+
+The platform communicates with Groq via direct HTTP POST requests using the synchronous `httpx.Client` handler.
+
+### ⚙️ Core Parameters
+* **Endpoint**: `https://api.groq.com/openai/v1/chat/completions`
+* **JSON Mode**: Enforced via `response_format={"type": "json_object"}` inside the API payload.
+* **Temperature**: Fixed at `0.1` to ensure analytical consistency, reproducibility, and prevent speculative summaries.
+* **Strict Timeout Limit**: Capped at **10.0 seconds** per call with **2 retry attempts** using linear backoffs. This stops the React client from freezing due to network latency.
+
+---
+
+## 🧹 Response Cleaning Wrapper (`clean_json_text`)
+
+LLMs sometimes wrap JSON outputs in Markdown code blocks (e.g. ```json ... ```) even when JSON Mode is requested.
+To handle this, the `llm_service.py` utility runs responses through `clean_json_text`:
+
+```python
+import re
+
+def clean_json_text(text: str) -> str:
+    """Strips markdown code blocks and extracts JSON object from LLM response."""
+    if not text:
+        return text
+    text = text.strip()
+    # Strip markdown backticks
+    text = re.sub(r"^```(?:json)?\s*", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"\s*```$", "", text)
+    # Match outermost curly braces to extract raw JSON
+    match = re.search(r"(\{.*\})", text, re.DOTALL)
+    if match:
+        return match.group(1)
+    return text
+```
+
+This guarantees valid, parseable JSON payloads prior to dictionary translation and schema validation.
 
 ---
 
 ## 🛡️ Robust Fallback Architecture
 
-To ensure Capgemini deep dive suitability, the platform implements an **automatic rule-based local fallback**. If the LLM API is unavailable, rate-limited, times out, or fails format checks, the engine immediately calls the local, offline rules engine.
+If the Groq API fails (due to invalid API key, network timeout, rate limit HTTP 429, or JSON parsing anomalies), the system executes a **local heuristic rules fallback** to ensure high availability.
 
-```
-[Agent Triggered]
-       │
-       ▼
-Check: GROQ_API_KEY ? ──(No)──> [Run Local Rule-Based Engine] ──> [Format Schema Output]
-       │
-      (Yes)
-       ▼
-Query Groq (llama-3.3-70b-versatile)
-  - Enforce JSON response
-  - Set 10s timeout limit
-       │
-       ├─> SUCCESS ──> [Parse JSON] ──> [Validate Schema] ──> [Merge Math metrics] ──> Return
-       │
-       └─> FAILURE (Rate limit, Timeout, Parsing error)
-             │
-             ▼
-        [Catch Exception] ➔ [Log Diagnostic Details] ➔ [Invoke Local Rule Engine] ➔ Return
+```mermaid
+graph TD
+    Query[Run Sub-Agent / Master Agent] --> CheckConfig{Is GROQ_API_KEY Configured?}
+    
+    CheckConfig -->|No| LocalFallback[Activate Local Rule Engine]
+    CheckConfig -->|Yes| HTTPRequest[Query Groq API with 10.0s Timeout]
+    
+    HTTPRequest -->|Success| CleanJSON[Run clean_json_text]
+    CleanJSON --> Parse[Parse JSON & Merge Math Data] --> Return[Return Response]
+    
+    HTTPRequest -->|Timeout / API Error| LogErr[Log Exception Details] --> LocalFallback
+    LocalFallback --> RuleMath[Compute Deterministic Metrics] --> Return
 ```
 
----
-
-## 📝 Agent Prompts & Outputs
-
-Each agent formats calculations into structured JSON prompts.
-
-### 1. Technical Analysis Agent
-* **Input variables**: Price, moving averages (50/200 MA), RSI, MACD parameters, support/resistance levels, distances, volatility, and timeframe SMA-20 trends.
-* **LLM Prompts & Output**:
-  ```json
-  {
-    "trend": "Bullish" | "Bearish" | "Neutral",
-    "confidence": 0-100,
-    "summary": "narrative technical structure details...",
-    "signals": ["Price above 50-day MA", "MACD bullish momentum"],
-    "risk_factors": ["High volatility index"]
-  }
-  ```
-
-### 2. Fundamental Analysis Agent
-* **Input variables**: PE Ratio, Revenue growth %, Earnings growth %, Total revenue, Net income, Market Capitalization scale.
-* **LLM Prompts & Output**:
-  ```json
-  {
-    "health_score": 0-100,
-    "valuation_score": 0-100,
-    "growth_score": 0-100,
-    "summary": "financial summary narrative...",
-    "strengths": ["Strong double-digit net profit margin"],
-    "weaknesses": ["Elevated premium multiple valuation"]
-  }
-  ```
-
-### 3. Sentiment Analysis Agent
-* **Input variables**: List of harvested news headlines, publishers, dates, and preliminary tagged sentiment ratios.
-* **LLM Prompts & Output**:
-  ```json
-  {
-    "sentiment": "Positive" | "Negative" | "Neutral",
-    "confidence": 0-100,
-    "summary": "media narrative synthesis...",
-    "positive_drivers": ["earnings expansion"],
-    "negative_drivers": ["regulatory litigation risk"]
-  }
-  ```
-
-### 4. Master Agent Synthesis
-* **Input variables**: Outputs of Technical, Fundamental, and Sentiment agents. Also inputs calculated weighted confidence and risk score.
-* **LLM Prompts & Output**:
-  ```json
-  {
-    "market_bias": "Bullish" | "Bearish" | "Neutral",
-    "confidence": 0-100,
-    "risk": "Low" | "Medium" | "High",
-    "key_drivers": ["Technicals show strong uptrend...", "Stable fundamental metrics..."],
-    "watchlist_factors": ["Monitor support level at $X...", "Upcoming earnings catalyst..."],
-    "summary": "final executive synthesis narrative..."
-  }
-  ```
-  *(Important: Direct BUY/SELL/HOLD advice is strictly censored under all modes to maintain compliance).*
+### Fallback Content Generators:
+* **Technical Agent Fallback**: Returns trends based on SMA-20 slopes, support/resistance lines, and RSI indices calculated in Python.
+* **Fundamental Agent Fallback**: Generates comments and health metrics based on hardcoded PE ratios, revenue growth rates, and cash reserves.
+* **Sentiment Agent Fallback**: Populates news sentiment summaries and event tags by checking titles against keyword lists.
+* **Master Agent Fallback**: Computes consensus statistics in Python and returns a standard summary, ensuring consistent performance.

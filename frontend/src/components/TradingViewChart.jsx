@@ -1,9 +1,19 @@
-// TradingViewChart.jsx — Renders an interactive TradingView widget
+// TradingViewChart.jsx — Renders an interactive TradingView widget or a custom native chart
 // Automatically resolves ticker formats (e.g., RELIANCE.NS -> NSE:RELIANCE)
 // Supports interactive timeframe switching: 15m, 1h, 4h, 1d, 1w
 
 import React, { useState, useEffect, useRef } from "react";
-import { BarChart3 } from "lucide-react";
+import { BarChart3, TrendingUp, Cpu } from "lucide-react";
+import {
+  ResponsiveContainer,
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ReferenceLine
+} from "recharts";
 
 const TIMEFRAMES = [
   { label: "15m", val: "15" },
@@ -13,9 +23,29 @@ const TIMEFRAMES = [
   { label: "1w", val: "W" },
 ];
 
-function TradingViewChart({ symbol }) {
-  const [activeTimeframe, setActiveTimeframe] = useState("1d");
+function TradingViewChart({ 
+  symbol, 
+  timeframeData, 
+  supportPrice, 
+  resistancePrice,
+  activeTimeframe: propsTimeframe,
+  setActiveTimeframe: propsSetTimeframe
+}) {
+  const [localTimeframe, setLocalTimeframe] = useState("1d");
+  const activeTimeframe = propsTimeframe !== undefined ? propsTimeframe : localTimeframe;
+  const setActiveTimeframe = propsSetTimeframe !== undefined ? propsSetTimeframe : setLocalTimeframe;
   const containerRef = useRef(null);
+
+  // Check if ticker is Indian to default to the custom native chart
+  const isIndian = symbol && (
+    symbol.endsWith(".NS") || 
+    symbol.endsWith(".BO") || 
+    symbol.endsWith(".ns") || 
+    symbol.endsWith(".bo")
+  );
+  
+  const [chartMode, setChartMode] = useState(isIndian ? "native" : "tradingview");
+  const currencySymbol = isIndian ? "₹" : "$";
 
   // Map timeframe label to TradingView intervals
   const timeframeMap = {
@@ -44,6 +74,9 @@ function TradingViewChart({ symbol }) {
   const activeInterval = timeframeMap[activeTimeframe] || "D";
 
   useEffect(() => {
+    // Only load the TradingView widget if chartMode is "tradingview"
+    if (chartMode !== "tradingview") return;
+
     const container = containerRef.current;
     if (!container) return;
 
@@ -98,43 +131,141 @@ function TradingViewChart({ symbol }) {
         container.innerHTML = "";
       }
     };
-  }, [tvSymbol, activeInterval]);
+  }, [tvSymbol, activeInterval, chartMode]);
+
+  // Format Recharts historical data array
+  const activeDataArray = timeframeData ? timeframeData[activeTimeframe] : null;
+  const chartData = activeDataArray
+    ? activeDataArray.map((price, idx) => ({
+        idx,
+        Price: price,
+      }))
+    : [];
+
+  const sPrice = typeof supportPrice === "number" ? supportPrice : parseFloat(supportPrice);
+  const rPrice = typeof resistancePrice === "number" ? resistancePrice : parseFloat(resistancePrice);
 
   return (
     <div className="quantum-card w-full flex flex-col gap-4">
-      {/* Chart Header & Timeframe Selector */}
-      <div className="flex items-center justify-between border-b border-[#1e1e4a] pb-3">
+      {/* Chart Header & Toggles */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between border-b border-[#1e1e4a] pb-3 gap-3">
         <div>
           <h3 className="text-white font-semibold text-sm flex items-center gap-2">
-            <BarChart3 size={16} className="text-slate-300" /> Real-Time Chart
+            <BarChart3 size={16} className="text-slate-300" /> {chartMode === "native" ? "Quantum Native Chart" : "TradingView Chart"}
           </h3>
-          <p className="text-slate-500 text-xs mt-0.5">Interactive market tracking for {tvSymbol}</p>
+          <p className="text-slate-500 text-xs mt-0.5">
+            {chartMode === "native" 
+              ? `Interactive custom tracking feed for ${symbol}`
+              : `Interactive TradingView widget for ${tvSymbol}`
+            }
+          </p>
         </div>
         
-        {/* Timeframe Buttons */}
-        <div className="flex gap-1 bg-[#0a0a1a] p-1 rounded-lg border border-[#1e1e4a]">
-          {TIMEFRAMES.map((tf) => (
+        {/* Controls block */}
+        <div className="flex flex-wrap gap-2 items-center">
+          {/* Chart Mode Toggle */}
+          <div className="flex gap-1 bg-[#0a0a1a] p-1 rounded-lg border border-[#1e1e4a]">
             <button
-              key={tf.label}
-              onClick={() => setActiveTimeframe(tf.label)}
-              className={`px-3 py-1 text-xs font-semibold rounded-md transition-all duration-200 ${
-                activeTimeframe === tf.label
-                  ? "bg-white text-black shadow-md"
+              onClick={() => setChartMode("native")}
+              className={`px-3 py-1 text-[11px] font-semibold rounded-md transition-all duration-200 flex items-center gap-1 cursor-pointer ${
+                chartMode === "native"
+                  ? "bg-[#FFBA9D] text-black shadow-md font-bold"
                   : "text-slate-400 hover:text-white"
               }`}
             >
-              {tf.label}
+              <Cpu size={12} /> Native
             </button>
-          ))}
+            <button
+              onClick={() => setChartMode("tradingview")}
+              className={`px-3 py-1 text-[11px] font-semibold rounded-md transition-all duration-200 flex items-center gap-1 cursor-pointer ${
+                chartMode === "tradingview"
+                  ? "bg-[#FFBA9D] text-black shadow-md font-bold"
+                  : "text-slate-400 hover:text-white"
+              }`}
+            >
+              <TrendingUp size={12} /> TradingView
+            </button>
+          </div>
+
+          {/* Timeframe Buttons */}
+          <div className="flex gap-1 bg-[#0a0a1a] p-1 rounded-lg border border-[#1e1e4a]">
+            {TIMEFRAMES.map((tf) => (
+              <button
+                key={tf.label}
+                onClick={() => setActiveTimeframe(tf.label)}
+                className={`px-3 py-1 text-xs font-semibold rounded-md transition-all duration-200 cursor-pointer ${
+                  activeTimeframe === tf.label
+                    ? "bg-white text-black shadow-md font-bold"
+                    : "text-slate-400 hover:text-white"
+                }`}
+              >
+                {tf.label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
-      {/* Widget Container */}
+      {/* Widget/Chart Container */}
       <div 
-        ref={containerRef} 
-        className="w-full rounded-xl overflow-hidden border border-[#1e1e4a]/60 bg-[#0a0a1a]" 
+        className="w-full rounded-xl overflow-hidden border border-[#1e1e4a]/60 bg-[#0a0a1a] p-4 flex items-center justify-center" 
         style={{ height: "400px" }}
-      />
+      >
+        {chartMode === "tradingview" ? (
+          <div ref={containerRef} className="w-full h-full" />
+        ) : (
+          timeframeData ? (
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={chartData}>
+                <defs>
+                  <linearGradient id="colorPriceTv" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#FFBA9D" stopOpacity={0.25}/>
+                    <stop offset="95%" stopColor="#FFBA9D" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid stroke="rgba(255,255,255,0.05)" strokeDasharray="3 3" vertical={false} />
+                <XAxis dataKey="idx" hide />
+                <YAxis 
+                  domain={["dataMin - (dataMax - dataMin) * 0.05", "dataMax + (dataMax - dataMin) * 0.05"]} 
+                  stroke="#64748b" 
+                  tickFormatter={(v) => `${currencySymbol}${v.toLocaleString()}`}
+                  fontFamily="monospace"
+                  fontSize={10}
+                />
+                <Tooltip 
+                  contentStyle={{ backgroundColor: "#0a0a1a", borderColor: "rgba(255,255,255,0.1)", borderRadius: "8px" }}
+                  labelStyle={{ color: "#FFBA9D" }}
+                  itemStyle={{ color: "#fff" }}
+                  formatter={(value) => [`${currencySymbol}${value.toLocaleString()}`, "Price"]}
+                />
+                {!isNaN(sPrice) && (
+                  <ReferenceLine 
+                    y={sPrice} 
+                    label={{ value: `Support Floor: ${currencySymbol}${sPrice.toFixed(2)}`, fill: "#10b981", position: "bottom", fontSize: 9, fontFamily: "monospace" }} 
+                    stroke="#10b981" 
+                    strokeDasharray="3 3" 
+                  />
+                )}
+                {!isNaN(rPrice) && (
+                  <ReferenceLine 
+                    y={rPrice} 
+                    label={{ value: `Resistance Ceiling: ${currencySymbol}${rPrice.toFixed(2)}`, fill: "#ef4444", position: "top", fontSize: 9, fontFamily: "monospace" }} 
+                    stroke="#ef4444" 
+                    strokeDasharray="3 3" 
+                  />
+                )}
+                <Area type="monotone" dataKey="Price" stroke="#FFBA9D" strokeWidth={2} fillOpacity={1} fill="url(#colorPriceTv)" />
+              </AreaChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="flex flex-col items-center justify-center text-center p-8 space-y-2">
+              <span className="text-2xl">📊</span>
+              <p className="text-slate-400 text-xs font-mono">No historical price arrays found for this symbol.</p>
+              <p className="text-slate-650 text-[10px] max-w-md">The system failed to retrieve timeframe data from the API feed. Toggle to TradingView to try loading the external widget.</p>
+            </div>
+          )
+        )}
+      </div>
     </div>
   );
 }

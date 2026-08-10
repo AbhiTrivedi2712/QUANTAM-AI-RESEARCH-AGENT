@@ -2,7 +2,7 @@
 # Defines the data models for validating HTTP request and response shapes.
 
 from pydantic import BaseModel
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 
 
 # ─── Request Schema ───────────────────────────────────────────────────────────
@@ -112,6 +112,7 @@ class AnalyzeResponse(BaseModel):
     stock: str
     current_price: float
     change_pct: float
+    market_state: Optional[str] = ""   # "REGULAR", "PRE", "POST", "CLOSED", etc.
     technical: TechnicalResult
     fundamental: FundamentalResult
     sentiment: SentimentResult

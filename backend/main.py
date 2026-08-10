@@ -23,10 +23,13 @@ app = FastAPI(
 
 # ── CORS (Cross-Origin Resource Sharing) ──────────────────────────────────────
 # This is REQUIRED so our React frontend can talk to our FastAPI backend.
-# We include standard ports and fallbacks (e.g. 5173, 5174, 5175) to prevent CORS issues.
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=[
+# We read from ALLOWED_ORIGINS env variable, splitting by commas.
+import os
+allowed_origins_env = os.getenv("ALLOWED_ORIGINS", "")
+if allowed_origins_env:
+    origins = [origin.strip() for origin in allowed_origins_env.split(",") if origin.strip()]
+else:
+    origins = [
         "http://localhost:5173",
         "http://localhost:5174",
         "http://localhost:5175",
@@ -35,8 +38,15 @@ app.add_middleware(
         "http://127.0.0.1:5174",
         "http://127.0.0.1:5175",
         "http://127.0.0.1:3000",
-    ],
-    allow_credentials=True,
+    ]
+
+# Spec check: if "*" is present, we must not pass allow_credentials=True
+allow_all_origins = "*" in origins or len(origins) == 0
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"] if allow_all_origins else origins,
+    allow_credentials=not allow_all_origins,
     allow_methods=["*"],   # Allow GET, POST, PUT, DELETE, etc.
     allow_headers=["*"],   # Allow all headers
 )

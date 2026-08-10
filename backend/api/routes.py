@@ -319,3 +319,57 @@ async def get_stock_info(symbol: str):
             status_code=500,
             detail=f"Failed to fetch stock detail for {resolved_symbol}: {str(e)}"
         )
+
+
+@router.get("/price/{symbol}")
+async def get_live_price(symbol: str):
+    """
+    GET /price/{symbol}
+    Lightweight, cache-bypassing endpoint that returns the live price
+    in ~1 second using fast_info. Ideal for real-time UI polling.
+    """
+    import yfinance as yf
+    resolved_symbol = stock_service.resolve_symbol(symbol.upper().strip())
+    try:
+        ticker = yf.Ticker(resolved_symbol, session=stock_service._yf_session)
+        fi = ticker.fast_info
+        last_price    = getattr(fi, "last_price", None)
+        prev_close    = getattr(fi, "previous_close", None)
+        market_cap    = getattr(fi, "market_cap", None)
+
+        if not last_price:
+            raise ValueError("fast_info returned no price")
+
+        last_price = float(last_price)
+        prev_close = float(prev_close) if prev_close else last_price
+        change     = last_price - prev_close
+        change_pct = (change / prev_close * 100) if prev_close else 0.0
+
+        return sanitize_nans({
+            "symbol": resolved_symbol,
+            "price": round(last_price, 2),
+            "change": round(change, 2),
+            "change_pct": round(change_pct, 2),
+            "previous_close": round(prev_close, 2),
+            "market_cap": market_cap,
+            "source": "Yahoo Finance fast_info (live)"
+        })
+    except Exception as e:
+        logger.error(f"Live price fetch failed for {resolved_symbol}: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Live price unavailable for {resolved_symbol}: {str(e)}"
+        )
+
+
+@router.post("/clear-cache")
+async def clear_analysis_cache():
+    """
+    POST /clear-cache
+    Flushes all in-memory cached analysis results. Use between demo runs
+    to ensure fresh data without restarting the server.
+    """
+    cache_service.clear_cache()
+    logger.info("Cache cleared via admin endpoint.")
+    return {"status": "ok", "message": "Analysis cache cleared. Next requests will fetch fresh data."}
+

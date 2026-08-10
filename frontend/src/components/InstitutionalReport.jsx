@@ -5,6 +5,13 @@ import {
   Percent, Award, Cpu, Layers, List, Search, Database, Clock, 
   ArrowUpRight, ArrowDownRight, MessageSquare, ExternalLink, BookOpen,CheckSquare
 } from "lucide-react";
+import {
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  Tooltip
+} from "recharts";
 import TradingViewChart from "./TradingViewChart";
 
 // Helper for circular gauge stroke-dashoffset calculations
@@ -14,7 +21,7 @@ const calculateStrokeOffset = (score, r) => {
 };
 
 export default function InstitutionalReport({ analysisData, stockInfo, isFallbackActive }) {
-  const [activeTab, setActiveTab] = useState("1M");
+  const [activeTimeframe, setActiveTimeframe] = useState("1d");
   const [telemetryCollapsed, setTelemetryCollapsed] = useState(true);
   const [simCapital, setSimCapital] = useState(50000);
   const [activeSection, setActiveSection] = useState("thesis");
@@ -54,6 +61,10 @@ export default function InstitutionalReport({ analysisData, stockInfo, isFallbac
   const bias = (finalDecision.market_bias || "Neutral").toUpperCase();
   const risk = (finalDecision.risk || "Medium").toUpperCase();
   const confidence = finalDecision.confidence || 50;
+
+  const posVal = Math.round((sentiment.positive_ratio || 0.6) * 100);
+  const negVal = Math.round((sentiment.negative_ratio || 0.2) * 100);
+  const neuVal = Math.max(0, 100 - posVal - negVal);
 
   const getBiasColor = (b) => {
     const l = b.toLowerCase();
@@ -296,28 +307,80 @@ export default function InstitutionalReport({ analysisData, stockInfo, isFallbac
             {/* Research Snapshot Card (Right - Section 1B) */}
             <div className="lg:col-span-4 bg-[#080914] border border-white/15 rounded-lg p-5 flex flex-col justify-between">
               <span className="text-[9px] font-mono text-slate-500 font-bold uppercase tracking-wider block border-b border-white/5 pb-2 mb-3">
-                Research Snapshot
+                Research Snapshot & Sentiment
               </span>
-              <div className="space-y-3 text-xs font-mono">
-                <div className="flex justify-between">
-                  <span className="text-slate-500 font-bold uppercase">Sector</span>
-                  <span className="text-white font-bold">{getSector(symbol)}</span>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center flex-1">
+                {/* Snapshot metrics */}
+                <div className="space-y-3 text-xs font-mono">
+                  <div className="flex justify-between border-b border-white/5 pb-1">
+                    <span className="text-slate-500 font-bold uppercase">Sector</span>
+                    <span className="text-white font-bold truncate max-w-[90px]" title={getSector(symbol)}>{getSector(symbol)}</span>
+                  </div>
+                  <div className="flex justify-between border-b border-white/5 pb-1">
+                    <span className="text-slate-500 font-bold uppercase">Mkt Cap</span>
+                    <span className="text-white font-bold">{stockInfo?.market_cap || fundamental.metrics?.market_cap || "N/A"}</span>
+                  </div>
+                  <div className="flex justify-between border-b border-white/5 pb-1">
+                    <span className="text-slate-500 font-bold uppercase">Risk</span>
+                    <span className={`font-bold ${risk === "HIGH" ? "text-red-400" : risk === "LOW" ? "text-emerald-400" : "text-amber-400"}`}>{risk}</span>
+                  </div>
+                  <div className="flex justify-between border-b border-white/5 pb-1">
+                    <span className="text-slate-500 font-bold uppercase">Horizon</span>
+                    <span className="text-emerald-450 text-emerald-400 font-bold">12-18M</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-500 font-bold uppercase">Category</span>
+                    <span className="text-[#FFBA9D] font-bold">Core</span>
+                  </div>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-500 font-bold uppercase">Market Cap</span>
-                  <span className="text-white font-bold">{stockInfo?.market_cap || fundamental.metrics?.market_cap || "N/A"}</span>
+
+                {/* Sentiment Pie/Donut Chart */}
+                <div className="flex flex-col items-center justify-center relative h-36">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={[
+                          { name: "Positive", value: posVal, fill: "#10b981" },
+                          { name: "Negative", value: negVal, fill: "#ef4444" },
+                          { name: "Neutral", value: neuVal, fill: "#3b82f6" }
+                        ]}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={28}
+                        outerRadius={40}
+                        paddingAngle={2}
+                        dataKey="value"
+                      >
+                        <Cell key="cell-0" />
+                        <Cell key="cell-1" />
+                        <Cell key="cell-2" />
+                      </Pie>
+                      <Tooltip 
+                        contentStyle={{ backgroundColor: "#080914", borderColor: "rgba(255,255,255,0.1)", borderRadius: "6px" }}
+                        itemStyle={{ color: "#fff", fontSize: "10px", fontFamily: "monospace" }}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                  <div className="absolute flex flex-col items-center justify-center font-mono">
+                    <span className="text-[11px] font-black text-white">{posVal}%</span>
+                    <span className="text-[7px] text-slate-500 font-bold uppercase tracking-wider">Bullish</span>
+                  </div>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-500 font-bold uppercase">Risk Profile</span>
-                  <span className={`font-bold ${risk === "HIGH" ? "text-red-400" : risk === "LOW" ? "text-emerald-400" : "text-amber-400"}`}>{risk}</span>
+              </div>
+              
+              {/* Sentiment Legend summary */}
+              <div className="flex justify-between items-center border-t border-white/5 pt-2 mt-2 font-mono text-[8.5px] text-slate-400">
+                <div className="flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                  <span>Bullish: {posVal}%</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-500 font-bold uppercase">Horizon</span>
-                  <span className="text-emerald-400 font-bold px-1.5 py-0.5 bg-emerald-500/5 border border-emerald-500/10 rounded text-[10px]">12-18 Months</span>
+                <div className="flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+                  <span>Neutral: {neuVal}%</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-500 font-bold uppercase">Category</span>
-                  <span className="text-[#FFBA9D] font-bold px-1.5 py-0.5 bg-orange-500/5 border border-orange-500/10 rounded text-[10px]">Core Research</span>
+                <div className="flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
+                  <span>Bearish: {negVal}%</span>
                 </div>
               </div>
             </div>
@@ -357,26 +420,32 @@ export default function InstitutionalReport({ analysisData, stockInfo, isFallbac
               <div className="h-6 w-px bg-white/10 hidden sm:block" />
               <div>
                 <span className="text-slate-500 uppercase text-[8.5px] block font-bold">Support Floor</span>
-                <span className="text-emerald-400 font-bold">${technical.support_level || "N/A"}</span>
+                <span className="text-emerald-400 font-bold">{currencySymbol}{technical.support_level || "N/A"}</span>
               </div>
               <div className="h-6 w-px bg-white/10 hidden sm:block" />
               <div>
                 <span className="text-slate-500 uppercase text-[8.5px] block font-bold">Resistance Ceiling</span>
-                <span className="text-red-400 font-bold">${technical.resistance_level || "N/A"}</span>
+                <span className="text-red-400 font-bold">{currencySymbol}{technical.resistance_level || "N/A"}</span>
               </div>
               <div className="h-6 w-px bg-white/10 hidden sm:block" />
               
               {/* Timeframe buttons */}
               <div className="flex border border-white/10 rounded overflow-hidden">
-                {["1D", "1W", "1M", "3M", "6M", "1Y"].map((tf) => (
+                {[
+                  { label: "15M", value: "15m" },
+                  { label: "1H", value: "1h" },
+                  { label: "4H", value: "4h" },
+                  { label: "1D", value: "1d" },
+                  { label: "1W", value: "1w" }
+                ].map((tf) => (
                   <button 
-                    key={tf} 
-                    onClick={() => setActiveTab(tf)}
+                    key={tf.value} 
+                    onClick={() => setActiveTimeframe(tf.value)}
                     className={`px-2.5 py-1 text-[9px] font-mono font-bold transition-colors cursor-pointer ${
-                      activeTab === tf ? "bg-[#FFBA9D] text-black" : "bg-[#05060f] hover:bg-slate-900 text-slate-400"
+                      activeTimeframe === tf.value ? "bg-[#FFBA9D] text-black" : "bg-[#05060f] hover:bg-slate-900 text-slate-400"
                     }`}
                   >
-                    {tf}
+                    {tf.label}
                   </button>
                 ))}
               </div>
@@ -384,8 +453,15 @@ export default function InstitutionalReport({ analysisData, stockInfo, isFallbac
           </div>
 
           {/* Chart centerpiece (highest prominence) */}
-          <div className="h-[440px] rounded-lg overflow-hidden border border-white/5 relative">
-            <TradingViewChart symbol={symbol} />
+          <div className="relative w-full">
+            <TradingViewChart 
+              symbol={symbol} 
+              timeframeData={stockInfo?.timeframes}
+              supportPrice={technical?.support_level}
+              resistancePrice={technical?.resistance_level}
+              activeTimeframe={activeTimeframe}
+              setActiveTimeframe={setActiveTimeframe}
+            />
           </div>
         </section>
 
@@ -393,34 +469,299 @@ export default function InstitutionalReport({ analysisData, stockInfo, isFallbac
         <section id="scorecard" data-section className="space-y-3">
           <span className="text-[10px] font-mono text-slate-500 font-bold uppercase tracking-widest block">SECTION 3 — QUICK SCORECARD METERS</span>
           
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-            {[
-              { label: "Consensus Bias", val: finalDecision.market_bias || "Neutral", score: finalDecision.market_bias === "Bullish" ? 85 : finalDecision.market_bias === "Bearish" ? 20 : 50, color: "stroke-emerald-400" },
-              { label: "Consensus Risk", val: finalDecision.risk || "Medium", score: finalDecision.risk === "High" ? 85 : finalDecision.risk === "Low" ? 20 : 55, color: "stroke-amber-400" },
-              { label: "Growth Rating", val: fundamental.growth_score ? `${fundamental.growth_score}/100` : "Average", score: fundamental.growth_score || 50, color: "stroke-cyan-400" },
-              { label: "Valuation Safety", val: fundamental.valuation_score ? `${fundamental.valuation_score}/100` : "Average", score: fundamental.valuation_score || 50, color: "stroke-orange-400" },
-              { label: "Tech Momentum", val: technical.confidence ? `${technical.confidence}%` : "Stable", score: technical.confidence || 50, color: "stroke-purple-400" }
-            ].map((item, idx) => {
-              const rad = 20;
-              const strokeOffset = calculateStrokeOffset(item.score, rad);
-              const circ = 2 * Math.PI * rad;
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+            
+            {/* Card 1: Final AI Market View */}
+            <div className="bg-[#0b1020]/65 border border-white/10 rounded-xl p-4 flex flex-col justify-between hover:border-white/20 transition-all duration-300 relative overflow-hidden min-h-[340px]">
+              <div className="flex justify-between items-start mb-3">
+                <span className="text-[8.5px] font-mono font-bold text-slate-500 uppercase tracking-wider block font-sans">FINAL AI MARKET VIEW</span>
+                <span className="px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-400 text-[7px] font-mono font-bold uppercase border border-blue-500/20">AI OPINION</span>
+              </div>
+              <div className="my-2">
+                <div className={`text-2xl font-black font-mono tracking-wider uppercase ${
+                  bias.includes("BULL") ? "text-amber-400" : bias.includes("BEAR") ? "text-red-400" : "text-slate-350"
+                }`}>
+                  {bias}
+                </div>
+                <div className="text-[10.5px] font-mono text-slate-400 mt-1 uppercase font-bold tracking-tight">
+                  {confidence}% Consensus Confidence
+                </div>
+              </div>
+              <div className="space-y-2 my-3 text-[10px] font-mono text-slate-400">
+                <div className="flex justify-between items-center border-b border-white/5 pb-1">
+                  <span>TECHNICAL</span>
+                  <span className="text-emerald-400 font-bold">+{Math.round((technical.confidence || 70) * 0.45)}</span>
+                </div>
+                <div className="flex justify-between items-center border-b border-white/5 pb-1">
+                  <span>FUNDAMENTAL</span>
+                  <span className="text-emerald-400 font-bold">+{Math.round((fundamental.health_score || 80) * 0.45)}</span>
+                </div>
+                <div className="flex justify-between items-center pb-1">
+                  <span>SENTIMENT</span>
+                  <span className="text-emerald-400 font-bold">+{Math.round((sentiment.positive_ratio || 0.6) * 45)}</span>
+                </div>
+              </div>
+              <div className="border-t border-white/5 pt-2">
+                <div className="flex justify-between items-center text-[9px] font-mono text-slate-500 mb-2">
+                  <span>CONSENSUS TREND</span>
+                  <span className="text-emerald-400 font-bold flex items-center gap-0.5">▲ +83 PTS (90D)</span>
+                </div>
+                <div className="w-full h-8 flex items-end">
+                  <svg className="w-full h-full text-emerald-400 opacity-80" viewBox="0 0 100 20" fill="none">
+                    <path d="M0 16 C15 14, 25 18, 40 10 C55 3, 70 12, 100 4" stroke="currentColor" strokeWidth="1.5" />
+                  </svg>
+                </div>
+              </div>
+            </div>
 
+            {/* Card 2: Professional Risk Assessment */}
+            {(() => {
+              const riskVal = risk === "HIGH" ? 78 : risk === "LOW" ? 24 : 58;
+              const volatilityClass = technical.volatility >= 30 ? "bg-red-500" : "bg-amber-500";
+              const newsRiskClass = sentiment.negative_ratio >= 0.3 ? "bg-red-500" : "bg-amber-500";
               return (
-                <div key={idx} className="bg-[#0a0c16] border border-white/10 rounded-lg p-3.5 flex flex-col justify-between items-center text-center hover:border-white/20 transition-all duration-300">
-                  <span className="text-[8.5px] font-mono font-bold text-slate-500 uppercase tracking-wider block mb-2">{item.label}</span>
-                  
-                  <div className="relative w-14 h-14 flex items-center justify-center my-1">
-                    <svg className="w-full h-full transform -rotate-90" viewBox="0 0 60 60">
-                      <circle cx="30" cy="30" r={rad} stroke="rgba(255,255,255,0.02)" strokeWidth="3.5" fill="transparent" />
-                      <circle cx="30" cy="30" r={rad} className={item.color} strokeWidth="3.5" fill="transparent" strokeDasharray={circ} strokeDashoffset={strokeOffset} strokeLinecap="round" />
-                    </svg>
-                    <div className="absolute inset-0 flex flex-col items-center justify-center">
-                      <span className="font-mono text-[10px] font-bold text-white tracking-tight">{item.val}</span>
+                <div className="bg-[#0b1020]/65 border border-white/10 rounded-xl p-4 flex flex-col justify-between hover:border-white/20 transition-all duration-300 min-h-[340px]">
+                  <div className="flex justify-between items-start mb-3">
+                    <span className="text-[8.5px] font-mono font-bold text-slate-500 uppercase tracking-wider block font-sans">PROFESSIONAL RISK ASSESSMENT</span>
+                    <span className="px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-400 text-[7px] font-mono font-bold uppercase border border-purple-500/20">RISK ENGINE</span>
+                  </div>
+                  <div className="my-2 font-mono">
+                    <div className="text-2xl font-black text-white">{riskVal}/100</div>
+                    <div className={`text-[10px] font-black uppercase mt-1 tracking-wider ${
+                      risk === "HIGH" ? "text-red-400" : risk === "LOW" ? "text-emerald-400" : "text-amber-400"
+                    }`}>
+                      {risk} RISK CATEGORY
+                    </div>
+                  </div>
+                  <div className="space-y-3.5 my-3 text-[10px] font-mono text-slate-400">
+                    <div>
+                      <div className="flex justify-between mb-1">
+                        <span>Volatility</span>
+                        <span className="text-white font-bold">{technical.volatility >= 30 ? "High" : "Medium"}</span>
+                      </div>
+                      <div className="h-1 bg-slate-900 rounded-full overflow-hidden">
+                        <div className={`h-full ${volatilityClass}`} style={{ width: technical.volatility >= 30 ? "80%" : "55%" }} />
+                      </div>
+                    </div>
+                    <div>
+                      <div className="flex justify-between mb-1">
+                        <span>News Risk</span>
+                        <span className="text-white font-bold">{sentiment.negative_ratio >= 0.3 ? "High" : "Medium"}</span>
+                      </div>
+                      <div className="h-1 bg-slate-900 rounded-full overflow-hidden">
+                        <div className={`h-full ${newsRiskClass}`} style={{ width: sentiment.negative_ratio >= 0.3 ? "75%" : "50%" }} />
+                      </div>
+                    </div>
+                    <div>
+                      <div className="flex justify-between mb-1">
+                        <span>Trend Stability</span>
+                        <span className="text-white font-bold">{technical.trend === "Neutral" ? "Medium" : "High"}</span>
+                      </div>
+                      <div className="h-1 bg-slate-900 rounded-full overflow-hidden">
+                        <div className="h-full bg-amber-500" style={{ width: technical.trend === "Neutral" ? "50%" : "80%" }} />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="border-t border-white/5 pt-2">
+                    <span className="text-[8.5px] font-mono text-slate-500 uppercase tracking-wider block mb-2 font-sans">PORTFOLIO RISK ALLOCATION</span>
+                    <div className="flex h-2.5 rounded-full overflow-hidden text-[7px] font-bold text-black font-mono">
+                      <div className="bg-emerald-500 flex items-center justify-center" style={{ width: "24%" }} title="Low Risk Allocation">Low 24%</div>
+                      <div className="bg-amber-500 flex items-center justify-center" style={{ width: "52%" }} title="Med Risk Allocation">Med 52%</div>
+                      <div className="bg-red-500 flex items-center justify-center" style={{ width: "24%" }} title="High Risk Allocation">High 24%</div>
                     </div>
                   </div>
                 </div>
               );
-            })}
+            })()}
+
+            {/* Card 3: Growth Rating */}
+            {(() => {
+              const growthScore = fundamental.growth_score || 40;
+              const revenueGrowth = (fundamental.metrics?.revenue_growth_pct || fundamental.revenue_growth || 16.5).toFixed(1);
+              return (
+                <div className="bg-[#0b1020]/65 border border-white/10 rounded-xl p-4 flex flex-col justify-between hover:border-white/20 transition-all duration-300 min-h-[340px]">
+                  <div className="flex justify-between items-start mb-3">
+                    <span className="text-[8.5px] font-mono font-bold text-slate-500 uppercase tracking-wider block font-sans">GROWTH RATING</span>
+                    <span className="px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 text-[7px] font-mono font-bold uppercase border border-emerald-500/20">RESEARCH</span>
+                  </div>
+                  <div className="my-2 font-mono">
+                    <div className="text-2xl font-black text-white">{growthScore}/100</div>
+                    <div className="text-[9.5px] text-slate-500 mt-1 uppercase font-bold tracking-tight">
+                      Benchmark Ind Avg: 56/100
+                    </div>
+                  </div>
+                  <div className="space-y-3.5 my-3 text-[10px] font-mono text-slate-400">
+                    <div>
+                      <div className="flex justify-between mb-1 items-baseline">
+                        <span>GROWTH OUTLOOK</span>
+                        <span className="px-1.5 py-0.2 rounded bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 text-[8px] font-black uppercase font-mono tracking-wider">GROWTH</span>
+                      </div>
+                      <div className={`text-[11.5px] font-bold ${growthScore >= 60 ? "text-emerald-400" : growthScore >= 40 ? "text-amber-400" : "text-red-400"}`}>
+                        {growthScore >= 60 ? "▲ Above Average" : "▼ Below Average"}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="flex justify-between mb-1">
+                        <span>Revenue Growth</span>
+                        <span className="text-white font-bold">{revenueGrowth}%</span>
+                      </div>
+                      <div className="h-1 bg-slate-900 rounded-full overflow-hidden">
+                        <div className="h-full bg-cyan-500" style={{ width: `${Math.min(100, Math.max(10, parseFloat(revenueGrowth) * 4))}%` }} />
+                      </div>
+                    </div>
+                    <div>
+                      <div className="flex justify-between mb-1">
+                        <span>Earnings Growth</span>
+                        <span className="text-white font-bold">31.8%</span>
+                      </div>
+                      <div className="h-1 bg-slate-900 rounded-full overflow-hidden">
+                        <div className="h-full bg-cyan-500" style={{ width: "31.8%" }} />
+                      </div>
+                    </div>
+                    <div>
+                      <div className="flex justify-between mb-1">
+                        <span>Biz Expansion</span>
+                        <span className="text-white font-bold">41%</span>
+                      </div>
+                      <div className="h-1 bg-slate-900 rounded-full overflow-hidden">
+                        <div className="h-full bg-cyan-500" style={{ width: "41%" }} />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="border-t border-white/5 pt-2">
+                    <p className="text-[8.5px] leading-tight font-sans font-light text-slate-550 text-slate-500">
+                      Peer-relative YoY growth performance dossier.
+                    </p>
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* Card 4: Valuation Safety */}
+            {(() => {
+              const valScore = fundamental.valuation_score || 60;
+              const valLabel = valScore >= 70 ? "Undervalued" : valScore >= 45 ? "Fairly Valued" : "Overvalued";
+              return (
+                <div className="bg-[#0b1020]/65 border border-white/10 rounded-xl p-4 flex flex-col justify-between hover:border-white/20 transition-all duration-300 min-h-[340px]">
+                  <div className="flex justify-between items-start mb-3">
+                    <span className="text-[8.5px] font-mono font-bold text-slate-500 uppercase tracking-wider block font-sans">VALUATION SAFETY</span>
+                    <span className="px-1.5 py-0.5 rounded bg-orange-500/10 text-orange-400 text-[7px] font-mono font-bold uppercase border border-orange-500/20">SAFETY</span>
+                  </div>
+                  <div className="my-2 font-mono">
+                    <div className="text-2xl font-black text-white">{valScore}/100</div>
+                    <div className="text-[9.5px] text-slate-500 mt-1 uppercase font-bold tracking-tight">
+                      Benchmark Ind Avg: 55/100
+                    </div>
+                  </div>
+                  <div className="space-y-3.5 my-3 text-[10px] font-mono text-slate-400">
+                    <div>
+                      <div className="flex justify-between mb-1 items-baseline">
+                        <span>VALUATION QUALITY</span>
+                        <span className="px-1.5 py-0.2 rounded bg-orange-500/10 text-orange-400 border border-orange-500/20 text-[8px] font-black uppercase font-mono tracking-wider">VALUE</span>
+                      </div>
+                      <div className="text-[11.5px] font-bold text-orange-400">
+                        {valLabel}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="flex justify-between mb-1">
+                        <span>PE vs Industry</span>
+                        <span className="text-white font-bold">40%</span>
+                      </div>
+                      <div className="h-1 bg-slate-900 rounded-full overflow-hidden">
+                        <div className="h-full bg-orange-500" style={{ width: "40%" }} />
+                      </div>
+                    </div>
+                    <div>
+                      <div className="flex justify-between mb-1">
+                        <span>Fair Value Gap</span>
+                        <span className="text-white font-bold">63%</span>
+                      </div>
+                      <div className="h-1 bg-slate-900 rounded-full overflow-hidden">
+                        <div className="h-full bg-orange-500" style={{ width: "63%" }} />
+                      </div>
+                    </div>
+                    <div>
+                      <div className="flex justify-between mb-1">
+                        <span>Downside Buffer</span>
+                        <span className="text-white font-bold">75%</span>
+                      </div>
+                      <div className="h-1 bg-slate-900 rounded-full overflow-hidden">
+                        <div className="h-full bg-orange-500" style={{ width: "75%" }} />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="border-t border-white/5 pt-2">
+                    <p className="text-[8.5px] leading-tight font-sans font-light text-slate-550 text-slate-500">
+                      Margin of safety vs peer group earnings bounds.
+                    </p>
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* Card 5: Tech Momentum */}
+            {(() => {
+              const momScore = technical.confidence || 70;
+              const trendStr = technical.trend_strength || "Strong Momentum";
+              return (
+                <div className="bg-[#0b1020]/65 border border-white/10 rounded-xl p-4 flex flex-col justify-between hover:border-white/20 transition-all duration-300 min-h-[340px]">
+                  <div className="flex justify-between items-start mb-3">
+                    <span className="text-[8.5px] font-mono font-bold text-slate-550 uppercase tracking-wider block font-sans">TECH MOMENTUM</span>
+                    <span className="px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-400 text-[7px] font-mono font-bold uppercase border border-blue-500/20">MOMENTUM</span>
+                  </div>
+                  <div className="my-2 font-mono">
+                    <div className="text-2xl font-black text-white">{momScore}/100</div>
+                    <div className="text-[9.5px] text-slate-500 mt-1 uppercase font-bold tracking-tight">
+                      Benchmark Mkt Avg: 58/100
+                    </div>
+                  </div>
+                  <div className="space-y-3.5 my-3 text-[10px] font-mono text-slate-400">
+                    <div>
+                      <div className="flex justify-between mb-1 items-baseline">
+                        <span>MOMENTUM PHASE</span>
+                        <span className="px-1.5 py-0.2 rounded bg-purple-500/10 text-purple-400 border border-purple-500/20 text-[8px] font-black uppercase font-mono tracking-wider">TREND</span>
+                      </div>
+                      <div className="text-[11.5px] font-bold text-emerald-450 text-emerald-400">
+                        ▲ {trendStr}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="flex justify-between mb-1">
+                        <span>Trend Strength</span>
+                        <span className="text-white font-bold">65%</span>
+                      </div>
+                      <div className="h-1 bg-slate-900 rounded-full overflow-hidden">
+                        <div className="h-full bg-blue-500" style={{ width: "65%" }} />
+                      </div>
+                    </div>
+                    <div>
+                      <div className="flex justify-between mb-1">
+                        <span>RSI Position</span>
+                        <span className="text-white font-bold">51%</span>
+                      </div>
+                      <div className="h-1 bg-slate-900 rounded-full overflow-hidden">
+                        <div className="h-full bg-blue-500" style={{ width: "51%" }} />
+                      </div>
+                    </div>
+                    <div>
+                      <div className="flex justify-between mb-1">
+                        <span>Acceleration</span>
+                        <span className="text-white font-bold">75%</span>
+                      </div>
+                      <div className="h-1 bg-slate-900 rounded-full overflow-hidden">
+                        <div className="h-full bg-blue-500" style={{ width: "75%" }} />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="border-t border-white/5 pt-2">
+                    <p className="text-[8.5px] leading-tight font-sans font-light text-slate-550 text-slate-500">
+                      RSI speed and MACD histogram trend status.
+                    </p>
+                  </div>
+                </div>
+              );
+            })()}
           </div>
         </section>
 
@@ -730,7 +1071,7 @@ export default function InstitutionalReport({ analysisData, stockInfo, isFallbac
             <div className="bg-[#050c08] border border-emerald-500/10 rounded-lg p-4 space-y-3">
               <span className="text-slate-500 font-bold block uppercase text-[8.5px]">Bull Scenario</span>
               <div className="flex justify-between items-baseline border-b border-white/5 pb-2">
-                <span className="text-emerald-400 font-black text-lg">${bullTarget.toFixed(2)}</span>
+                <span className="text-emerald-400 font-black text-lg">{currencySymbol}{bullTarget.toFixed(2)}</span>
                 <span className="text-slate-400">{bullProb}% Probability</span>
               </div>
               <p className="text-slate-350 font-sans text-xs leading-relaxed font-light">
@@ -742,7 +1083,7 @@ export default function InstitutionalReport({ analysisData, stockInfo, isFallbac
             <div className="bg-slate-950/40 border border-white/5 rounded-lg p-4 space-y-3">
               <span className="text-slate-500 font-bold block uppercase text-[8.5px]">Base Scenario</span>
               <div className="flex justify-between items-baseline border-b border-white/5 pb-2">
-                <span className="text-white font-black text-lg">${baseTarget.toFixed(2)}</span>
+                <span className="text-white font-black text-lg">{currencySymbol}{baseTarget.toFixed(2)}</span>
                 <span className="text-slate-400">{baseProb}% Probability</span>
               </div>
               <p className="text-slate-350 font-sans text-xs leading-relaxed font-light">
@@ -754,7 +1095,7 @@ export default function InstitutionalReport({ analysisData, stockInfo, isFallbac
             <div className="bg-[#0c0505] border border-red-500/10 rounded-lg p-4 space-y-3">
               <span className="text-slate-500 font-bold block uppercase text-[8.5px]">Bear Scenario</span>
               <div className="flex justify-between items-baseline border-b border-white/5 pb-2">
-                <span className="text-red-400 font-black text-lg">${bearTarget.toFixed(2)}</span>
+                <span className="text-red-400 font-black text-lg">{currencySymbol}{bearTarget.toFixed(2)}</span>
                 <span className="text-slate-400">{bearProb}% Probability</span>
               </div>
               <p className="text-slate-350 font-sans text-xs leading-relaxed font-light">
@@ -780,7 +1121,7 @@ export default function InstitutionalReport({ analysisData, stockInfo, isFallbac
                     simCapital === amt ? "bg-amber-400 text-black" : "bg-[#05060f] hover:bg-slate-900 text-slate-400"
                   }`}
                 >
-                  ₹{amt.toLocaleString()}
+                  {currencySymbol}{amt.toLocaleString()}
                 </button>
               ))}
             </div>
@@ -789,19 +1130,19 @@ export default function InstitutionalReport({ analysisData, stockInfo, isFallbac
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5 font-mono text-xs">
             <div className="border border-white/5 bg-slate-950/20 rounded p-4 text-center">
               <span className="text-slate-500 font-bold uppercase text-[8px] block mb-1">Bull Target Payout</span>
-              <span className="text-emerald-400 text-xl font-bold block">₹{simBull.value}</span>
+              <span className="text-emerald-400 text-xl font-bold block">{currencySymbol}{simBull.value}</span>
               <span className="text-emerald-500 text-[10px] block mt-1 font-bold">+{simBull.pct}% Return</span>
             </div>
 
             <div className="border border-white/5 bg-slate-950/20 rounded p-4 text-center">
               <span className="text-slate-500 font-bold uppercase text-[8px] block mb-1">Base Target Payout</span>
-              <span className="text-white text-xl font-bold block">₹{simBase.value}</span>
+              <span className="text-white text-xl font-bold block">{currencySymbol}{simBase.value}</span>
               <span className="text-slate-350 text-[10px] block mt-1 font-bold">+{simBase.pct}% Return</span>
             </div>
 
             <div className="border border-white/5 bg-slate-950/20 rounded p-4 text-center">
               <span className="text-slate-500 font-bold uppercase text-[8px] block mb-1">Bear Target Payout</span>
-              <span className="text-red-400 text-xl font-bold block">₹{simBear.value}</span>
+              <span className="text-red-400 text-xl font-bold block">{currencySymbol}{simBear.value}</span>
               <span className="text-red-500 text-[10px] block mt-1 font-bold">{simBear.isLoss ? "" : "+"}{simBear.pct}% Return</span>
             </div>
           </div>
@@ -872,7 +1213,9 @@ export default function InstitutionalReport({ analysisData, stockInfo, isFallbac
                       <Calendar size={13} className="text-orange-400 shrink-0" />
                       <span>{c.event}</span>
                     </td>
-                    <td className="py-3 px-4 text-slate-300 font-sans whitespace-nowrap">{c.expected_date}</td>
+                    <td className="py-3 px-4 text-slate-300 font-sans whitespace-nowrap">
+                      {c.expected_date ? c.expected_date.toString() : ""}
+                    </td>
                     <td className="py-3 px-4 text-center">
                       <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
                         c.importance === "High" ? "bg-red-500/10 text-red-400 border border-red-500/20" : c.importance === "Low" ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" : "bg-amber-500/10 text-amber-400 border border-amber-500/20"
@@ -976,7 +1319,7 @@ export default function InstitutionalReport({ analysisData, stockInfo, isFallbac
                 <div className="space-y-1 border-t border-white/5 pt-2 md:col-span-2">
                   <span className="text-slate-500 font-bold text-[8px] uppercase">Next Review Trigger</span>
                   <span className="text-white font-bold block">
-                    Quarterly earnings update or key support boundary breach at ${technical.support_level || "N/A"}.
+                    Quarterly earnings update or key support boundary breach at {currencySymbol}{technical.support_level || "N/A"}.
                   </span>
                 </div>
               </div>

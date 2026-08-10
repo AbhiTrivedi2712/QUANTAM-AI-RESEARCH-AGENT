@@ -1,6 +1,6 @@
 # technical_agent.py
 # Technical Analysis Agent combining code mathematical indicators 
-# with optional Groq LLM logic and robust local engine fallbacks.
+# with Groq LLM logic and robust local engine fallbacks.
 
 import os
 import json
