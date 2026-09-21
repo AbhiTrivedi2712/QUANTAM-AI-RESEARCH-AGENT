@@ -97,7 +97,7 @@ def analyze(news_data: dict) -> dict:
             logger.info("GROQ_API_KEY detected. Prompting Groq sentiment agent...")
             
             # Format articles for prompt
-            article_list_str = "\n".join([f"- Title: {a['title']} (Source: {a['source']}, Date: {a['publish_time']})" for a in articles])
+            article_list_str = "\n".join([f"- Title: {a.get('title', 'Headline')} (Source: {a.get('source', 'Financial News')}, Date: {a.get('publish_time', 'Recent')})" for a in articles])
             
             prompt = f"""
 You are an expert financial analyst. Analyze these recent news articles for {symbol} and generate sentiment analysis details.

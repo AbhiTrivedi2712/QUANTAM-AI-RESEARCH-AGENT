@@ -1,12 +1,26 @@
-# test_backend.py
+# test_verification.py
 # Verification script to test that all backend services and agents function end-to-end.
-# Run this within the backend directory.
+# Run this within the backend directory: python test_verification.py
 
 import sys
 import os
+import io
 
-# Add the backend directory to the path so we can import modules
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", "..", "..", "QUANTAM-AI-RESEARCH-AGENT", "backend")))
+# Ensure UTF-8 output encoding across all operating system terminals
+if hasattr(sys.stdout, "reconfigure"):
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+
+# Add current backend directory and load environment variables
+backend_dir = os.path.abspath(os.path.dirname(__file__))
+if backend_dir not in sys.path:
+    sys.path.insert(0, backend_dir)
+
+from dotenv import load_dotenv
+load_dotenv(os.path.join(backend_dir, ".env"))
+load_dotenv(os.path.join(backend_dir, "..", ".env"))
 
 print("Python path configured. Testing imports...")
 
@@ -35,8 +49,8 @@ def run_test(symbol):
         # Fetch News
         news_data = news_service.get_news(resolved)
         print(f"4. News Headlines: Fetched {news_data['total_articles']} articles from {news_data['source']}")
-        for a in news_data['articles'][:2]:
-            print(f"   - [{a['sentiment']}] {a['title']}")
+        for a in news_data.get('articles', [])[:2]:
+            print(f"   - [{a.get('sentiment')}] {a.get('title')}")
 
         # Technical Analysis
         tech_res = technical_agent.analyze(stock_data, timeframes)
@@ -45,14 +59,14 @@ def run_test(symbol):
         print(f"   - Resistance Level (20d max): {tech_res['resistance_level']} (Dist: {tech_res['distance_to_resistance']}%)")
         print(f"   - Timeframe Trends: {tech_res['timeframe_analysis']}")
         print(f"   - Tech Risk Factors: {tech_res['risk_factors'][:2]}")
-        print(f"   - Summary: {tech_res['summary'][:150]}...")
+        print(f"   - Summary: {tech_res['summary'][:120]}...")
 
         # Fundamental Analysis
         fund_res = fundamental_agent.analyze(stock_data)
         print(f"6. Fundamental Agent Verdict: {fund_res['fundamental']} (Health: {fund_res['health_score']}, Valuation: {fund_res['valuation_score']}, Growth: {fund_res['growth_score']})")
         print(f"   - Strengths: {fund_res['strengths'][:2]}")
         print(f"   - Weaknesses: {fund_res['weaknesses'][:2]}")
-        print(f"   - Summary: {fund_res['summary'][:150]}...")
+        print(f"   - Summary: {fund_res['summary'][:120]}...")
 
         # Sentiment Analysis
         sent_res = sentiment_agent.analyze(news_data)
@@ -60,7 +74,7 @@ def run_test(symbol):
         print(f"   - Pos Drivers: {sent_res['positive_drivers'][:2]}")
         print(f"   - Neg Drivers: {sent_res['negative_drivers'][:2]}")
         print(f"   - Events: {sent_res['events']}")
-        print(f"   - Summary: {sent_res['summary'][:150]}...")
+        print(f"   - Summary: {sent_res['summary'][:120]}...")
 
         # Master Synthesis
         master_res = master_agent.analyze(tech_res, fund_res, sent_res)
@@ -70,7 +84,7 @@ def run_test(symbol):
         print(f"   - Confidence: {master_res['confidence']}%")
         print(f"   - Key Drivers: {master_res['key_drivers'][:2]}")
         print(f"   - Watchlist Factors: {master_res['watchlist_factors'][:2]}")
-        print(f"   - Summary: {master_res['summary']}")
+        print(f"   - Summary: {master_res['summary'][:150]}...")
 
         print(f"\nSUCCESS: End-to-end verification completed successfully for {symbol}!")
 

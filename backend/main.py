@@ -1,10 +1,11 @@
 # main.py — The entry point of our FastAPI backend
 # Run this file to start the server: uvicorn main:app --reload
 #
-# FastAPI automatically generates interactive API documentation at:
-#   http://localhost:8000/docs   ← Swagger UI (interactive)
-#   http://localhost:8000/redoc  ← ReDoc UI (readable)
+# Interactive API documentation available at:
+#   /docs   ← Swagger UI
+#   /redoc  ← ReDoc UI
 
+import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from api.routes import router
@@ -15,72 +16,71 @@ load_dotenv()
 
 # ── Create the FastAPI Application ───────────────────────────────────────────
 app = FastAPI(
-
     title="QUANTUM AGENT API",
     description="Multi-Agent Financial Intelligence Platform — Technical, Fundamental & Sentiment Analysis",
     version="1.0.0",
 )
 
 # ── CORS (Cross-Origin Resource Sharing) ──────────────────────────────────────
-# This is REQUIRED so our React frontend can talk to our FastAPI backend.
-# We read from ALLOWED_ORIGINS env variable, splitting by commas.
-import os
-allowed_origins_env = os.getenv("ALLOWED_ORIGINS", "")
-if allowed_origins_env:
-    origins = [origin.strip() for origin in allowed_origins_env.split(",") if origin.strip()]
+# Allows frontend clients (Vercel, Netlify, localhost, etc.) to communicate with the API.
+allowed_origins_env = os.getenv("ALLOWED_ORIGINS", "*").strip()
+
+if allowed_origins_env == "*" or not allowed_origins_env:
+    # Public / Open CORS (Standard for stateless public APIs)
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_credentials=False,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 else:
-    origins = [
-        "http://localhost:5173",
-        "http://localhost:5174",
-        "http://localhost:5175",
-        "http://localhost:3000",
-        "http://127.0.0.1:5173",
-        "http://127.0.0.1:5174",
-        "http://127.0.0.1:5175",
-        "http://127.0.0.1:3000",
-    ]
-
-# Spec check: if "*" is present, we must not pass allow_credentials=True
-allow_all_origins = "*" in origins or len(origins) == 0
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"] if allow_all_origins else origins,
-    allow_credentials=not allow_all_origins,
-    allow_methods=["*"],   # Allow GET, POST, PUT, DELETE, etc.
-    allow_headers=["*"],   # Allow all headers
-)
+    # Specific restricted origins
+    origins = [origin.strip() for origin in allowed_origins_env.split(",") if origin.strip()]
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=origins,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 
 # ── Register Routes ────────────────────────────────────────────────────────────
-# All routes defined in api/routes.py are now available under /api/
-# Example: POST /api/analyze, GET /api/health
+# All routes defined in api/routes.py are mounted under /api
 app.include_router(router, prefix="/api")
 
 
-# ── Root Endpoint ─────────────────────────────────────────────────────────────
+# ── Root & Health Endpoints ──────────────────────────────────────────────────
 @app.get("/")
 async def root():
-    """Welcome message for the API root."""
+    """Welcome message and metadata for the API root."""
     return {
-        "message": "Welcome to QUANTUM AGENT API",
-        "docs": "Visit /docs for interactive API documentation",
+        "name": "QUANTUM AGENT API",
+        "status": "online",
+        "version": "1.0.0",
+        "docs": "/docs",
         "endpoints": {
             "analyze": "POST /api/analyze",
             "health": "GET /api/health",
             "stock": "GET /api/stock/{symbol}",
+            "price": "GET /api/price/{symbol}",
         },
     }
 
 
 @app.get("/health")
 async def root_health():
-    """Service health check endpoint returning status ok."""
-    return {"status": "ok"}
+    """Liveness probe / health check for cloud load balancers and orchestrators."""
+    return {
+        "status": "ok",
+        "groq_configured": bool(os.getenv("GROQ_API_KEY", "").strip()),
+    }
 
 
-# ── Run directly (for development) ────────────────────────────────────────────
-# You can run this file directly: python main.py
-# Or use uvicorn: uvicorn main:app --reload --port 8000
+# ── Run directly (for local development) ──────────────────────────────────────
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+    port = int(os.getenv("PORT", 8000))
+    host = os.getenv("HOST", "0.0.0.0")
+    is_dev = os.getenv("ENV", "development").lower() != "production"
+    uvicorn.run("main:app", host=host, port=port, reload=is_dev)

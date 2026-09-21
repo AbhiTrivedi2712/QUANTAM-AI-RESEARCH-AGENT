@@ -21,13 +21,17 @@ load_dotenv()
 from logging.handlers import RotatingFileHandler
 
 # Setup logging
+log_handlers = [logging.StreamHandler()]
+try:
+    log_file = os.getenv("LOG_FILE", "quantum_system.log")
+    log_handlers.append(RotatingFileHandler(log_file, maxBytes=10*1024*1024, backupCount=5, encoding="utf-8"))
+except Exception:
+    pass
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
-    handlers=[
-        logging.StreamHandler(),
-        RotatingFileHandler("../quantum_system.log", maxBytes=10*1024*1024, backupCount=5, encoding="utf-8")
-    ]
+    handlers=log_handlers
 )
 logger = logging.getLogger("quantum_agent.api")
 

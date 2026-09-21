@@ -9,11 +9,30 @@ function getPythonCommand() {
     execSync('python -c "import encodings"', { stdio: 'ignore' });
     return 'python';
   } catch (e) {
-    // If default python fails, try the Python 3.12 path
-    const fallbackPath = 'C:\\Users\\DELL\\AppData\\Local\\Programs\\Python\\Python312\\python.exe';
-    if (fs.existsSync(fallbackPath)) {
-      console.log(`[Launcher] Default python is broken. Falling back to Python 3.12: ${fallbackPath}`);
-      return fallbackPath;
+    // If on Windows, check common Python installation paths dynamically
+    const userProfile = process.env.USERPROFILE || '';
+    const localAppData = process.env.LOCALAPPDATA || path.join(userProfile, 'AppData', 'Local');
+    
+    const candidates = [
+      path.join(localAppData, 'Programs', 'Python', 'Python313', 'python.exe'),
+      path.join(localAppData, 'Programs', 'Python', 'Python312', 'python.exe'),
+      path.join(localAppData, 'Programs', 'Python', 'Python311', 'python.exe'),
+      path.join(localAppData, 'Programs', 'Python', 'Python310', 'python.exe'),
+      'C:\\Python313\\python.exe',
+      'C:\\Python312\\python.exe',
+      'C:\\Python311\\python.exe',
+    ];
+
+    for (const candidate of candidates) {
+      if (fs.existsSync(candidate)) {
+        try {
+          execSync(`"${candidate}" -c "import encodings"`, { stdio: 'ignore' });
+          console.log(`[Launcher] Detected valid Python: ${candidate}`);
+          return candidate;
+        } catch (err) {
+          // Continue searching candidates
+        }
+      }
     }
     
     // Check if python3 works
@@ -21,9 +40,14 @@ function getPythonCommand() {
       execSync('python3 -c "import encodings"', { stdio: 'ignore' });
       return 'python3';
     } catch (e2) {
-      // Return default python and hope for the best
-      console.warn('[Launcher] Warning: Could not locate a fully working Python. Defaulting to "python".');
-      return 'python';
+      // Check py launcher
+      try {
+        execSync('py -3 -c "import encodings"', { stdio: 'ignore' });
+        return 'py -3';
+      } catch (e3) {
+        console.warn('[Launcher] Warning: Could not locate a fully working Python. Defaulting to "python".');
+        return 'python';
+      }
     }
   }
 }
